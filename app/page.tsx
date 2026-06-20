@@ -1,101 +1,163 @@
-import Image from "next/image";
+'use client';
+import { useState, useRef, useCallback } from 'react';
+import { SkullCanvas } from '@/components/SkullCanvas';
+
+// Amplitude → jaw tuning params
+const GAIN = 7;          // boost quiet speech into visible jaw movement
+const SMOOTHING = 0.72;  // 0 = instant, 1 = never moves — 0.72 gives a nice glide
+const MAX_JAW = 0.95;    // never fully slam open
+
+function base64ToArrayBuffer(b64: string): ArrayBuffer {
+  const bin = atob(b64);
+  const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  return buf.buffer;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [text, setText] = useState('');
+  const [jawOpen, setJawOpen] = useState(0);
+  const [speaking, setSpeaking] = useState(false);
+  const [error, setError] = useState('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const rafRef = useRef<number>(0);
+  const smoothedRef = useRef(0);
+
+  const stopLoop = () => cancelAnimationFrame(rafRef.current);
+
+  const easeJawClosed = useCallback(() => {
+    stopLoop();
+    const ease = () => {
+      smoothedRef.current *= 0.82;
+      setJawOpen(smoothedRef.current);
+      if (smoothedRef.current > 0.005) {
+        rafRef.current = requestAnimationFrame(ease);
+      } else {
+        setJawOpen(0);
+        smoothedRef.current = 0;
+        setSpeaking(false);
+      }
+    };
+    ease();
+  }, []);
+
+  const handleSpeak = useCallback(async () => {
+    if (!text.trim() || speaking) return;
+    setError('');
+    setSpeaking(true);
+    stopLoop();
+
+    let data: { audio: string; alignment: unknown; normalizedAlignment: unknown };
+    try {
+      const res = await fetch('/api/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error ?? `HTTP ${res.status}`);
+      }
+      data = await res.json();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Request failed');
+      setSpeaking(false);
+      return;
+    }
+
+    // Log alignment for Phase 1 captions / per-phoneme emphasis
+    console.log('[jaw-sync] alignment:', data.alignment);
+    console.log('[jaw-sync] normalizedAlignment:', data.normalizedAlignment);
+
+    const audioBuffer = base64ToArrayBuffer(data.audio);
+
+    // Create / reuse AudioContext — must happen inside a user-gesture handler
+    let ctx = audioCtxRef.current;
+    if (!ctx || ctx.state === 'closed') {
+      ctx = new AudioContext();
+      audioCtxRef.current = ctx;
+    }
+    if (ctx.state === 'suspended') await ctx.resume();
+
+    let decoded: AudioBuffer;
+    try {
+      decoded = await ctx.decodeAudioData(audioBuffer);
+    } catch {
+      setError('Failed to decode audio — check ElevenLabs response');
+      setSpeaking(false);
+      return;
+    }
+
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    const dataArr = new Uint8Array(analyser.frequencyBinCount);
+
+    const source = ctx.createBufferSource();
+    source.buffer = decoded;
+    source.connect(analyser);
+    analyser.connect(ctx.destination);
+    source.start();
+
+    // RAF loop: RMS → smooth → jawOpen
+    const tick = () => {
+      analyser.getByteTimeDomainData(dataArr);
+      let sumSq = 0;
+      for (let i = 0; i < dataArr.length; i++) {
+        const v = (dataArr[i] - 128) / 128;
+        sumSq += v * v;
+      }
+      const rms = Math.sqrt(sumSq / dataArr.length);
+      const clamped = Math.min(rms * GAIN, MAX_JAW);
+      smoothedRef.current = smoothedRef.current * SMOOTHING + clamped * (1 - SMOOTHING);
+      setJawOpen(smoothedRef.current);
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+
+    source.onended = () => easeJawClosed();
+  }, [text, speaking, easeJawClosed]);
+
+  return (
+    <main className="min-h-screen bg-gray-950 flex flex-col items-center justify-center gap-8 p-8">
+      <h1 className="text-xl font-semibold tracking-widest text-green-400 uppercase">
+        Skull · Phase 0 · Jaw Sync
+      </h1>
+
+      <div className="relative">
+        <SkullCanvas jawOpen={jawOpen} />
+        <span className="absolute bottom-2 right-3 font-mono text-xs tabular-nums text-green-700">
+          jaw {jawOpen.toFixed(3)}
+        </span>
+      </div>
+
+      <div className="flex w-full max-w-lg gap-3">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSpeak()}
+          placeholder="Type something for the skull to say…"
+          disabled={speaking}
+          className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white placeholder-gray-500 focus:border-green-600 focus:outline-none disabled:opacity-50"
+        />
+        <button
+          onClick={handleSpeak}
+          disabled={speaking || !text.trim()}
+          className="rounded-lg bg-green-700 px-6 py-3 font-semibold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          {speaking ? 'Speaking…' : 'Speak'}
+        </button>
+      </div>
+
+      {error && (
+        <p className="max-w-lg text-center text-sm text-red-400">{error}</p>
+      )}
+
+      <p className="max-w-sm text-center text-xs text-gray-600">
+        Jaw = live RMS amplitude via Web Audio AnalyserNode.
+        Character alignment logged to console for Phase 1 captions.
+      </p>
+    </main>
   );
 }
