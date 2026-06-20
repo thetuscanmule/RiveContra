@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify({ text, model_id: modelId }),
+      body: JSON.stringify({ text, model_id: modelId, voice_settings: { speed: 0.7 } }),
     }
   );
 
