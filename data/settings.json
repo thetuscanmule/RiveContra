@@ -1,4 +1,9 @@
 {
+  "rive": {
+    "stateMachine": "Game",
+    "inputScene": "scene",
+    "inputJawOpen": "jawOpen"
+  },
   "smoothing": 0.95,
   "speechSpeed": 0.7,
   "pauseBeforeGreeting": 1000,

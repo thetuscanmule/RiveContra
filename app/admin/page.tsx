@@ -7,14 +7,15 @@ import { useEffect, useRef, useState } from 'react';
 type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
-type Settings  = { smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number };
+type RiveConfig = { stateMachine: string; inputScene: string; inputJawOpen: string };
+type Settings   = { rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000 });
+  const [settings,   setSettings]   = useState<Settings>({ rive: { stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000 });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -168,6 +169,39 @@ export default function AdminPage() {
       </div>
 
       <div className="mx-auto max-w-5xl space-y-12 px-6 py-10">
+
+        {/* ── Rive Inputs ── */}
+        <section>
+          <SectionHeading title="Rive Inputs" />
+          <p className="mb-3 text-xs text-gray-400">
+            These must match the names in your <span className="font-mono">SkullRive.riv</span> file exactly.
+            A mismatch causes silent failure — the input simply won&apos;t respond.
+          </p>
+          <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+
+            <RiveInputRow
+              label="State machine name"
+              description="The name of the state machine in your Rive editor"
+              value={settings.rive.stateMachine}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, stateMachine: v } }))}
+            />
+
+            <RiveInputRow
+              label="Scene input"
+              description="Number input controlling which scene is visible — 0 skull · 1 dice · 2 results"
+              value={settings.rive.inputScene}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputScene: v } }))}
+            />
+
+            <RiveInputRow
+              label="Jaw open input"
+              description="Number input (0–1) driving the jaw / mouth rig from audio amplitude"
+              value={settings.rive.inputJawOpen}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputJawOpen: v } }))}
+            />
+
+          </div>
+        </section>
 
         {/* ── Settings ── */}
         <section>
@@ -453,6 +487,33 @@ function SectionHeading({ title }: { title: string }) {
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
     <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-400">{children}</p>
+  );
+}
+
+function RiveInputRow({
+  label,
+  description,
+  value,
+  onChange,
+}: {
+  label: string;
+  description: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-6 px-5 py-4">
+      <div className="min-w-0">
+        <FieldLabel>{label}</FieldLabel>
+        <p className="text-xs text-gray-400">{description}</p>
+      </div>
+      <input
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        spellCheck={false}
+        className="w-48 shrink-0 rounded border border-gray-200 px-3 py-1.5 font-mono text-sm text-gray-800 focus:border-gray-400 focus:outline-none"
+      />
+    </div>
   );
 }
 

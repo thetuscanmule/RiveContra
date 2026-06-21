@@ -3,19 +3,13 @@
 //   scene   — Number: 0 = skull/playing, 1 = dice/rolling, 2 = results
 //   jawOpen — Number: 0–1, forwarded to the skull nested artboard
 //
-// Rive editor requirements (update SkullRive.riv):
-//   • Rename the state machine from "Skull" → "Game"
-//   • Add Number input "scene" (default 0)
-//   • Add scene-switching in the SM:
-//       scene == 0 → skull nested artboard visible (jaw rig active)
-//       scene == 1 → dice placeholder visible  (skull hidden)
-//       scene == 2 → results placeholder visible (skull hidden)
-//   • "jawOpen" Number input already exists — keep it
+// Input names and the state machine name are configured in data/settings.json
+// under the "rive" key so they can be updated from the admin panel without
+// touching code.
 
 import { useEffect } from 'react';
 import { useRive, useStateMachineInput } from '@rive-app/react-webgl2';
-
-const STATE_MACHINE = 'Game';
+import { SETTINGS } from '@/lib/game/settings';
 
 interface Props {
   scene: number;   // 0 | 1 | 2
@@ -23,15 +17,17 @@ interface Props {
 }
 
 export function GameRive({ scene, jawOpen }: Props) {
+  const { stateMachine, inputScene, inputJawOpen } = SETTINGS.rive;
+
   const { rive, RiveComponent } = useRive({
     src: '/SkullRive.riv',
-    stateMachines: STATE_MACHINE,
+    stateMachines: stateMachine,
     autoplay: true,
     onLoadError: (e) => console.error('[GameRive] load error', e),
   });
 
-  const sceneInput  = useStateMachineInput(rive, STATE_MACHINE, 'scene');
-  const jawInput    = useStateMachineInput(rive, STATE_MACHINE, 'jawOpen');
+  const sceneInput = useStateMachineInput(rive, stateMachine, inputScene);
+  const jawInput   = useStateMachineInput(rive, stateMachine, inputJawOpen);
 
   useEffect(() => {
     if (sceneInput) sceneInput.value = scene;
