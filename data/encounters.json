@@ -4,9 +4,18 @@
     "tier": 1,
     "narration": "A rope bridge sways over an abyss. The ropes are old. Your options… are older.",
     "options": [
-      { "label": "Test each step carefully — Roll 2+",  "threshold": 2 },
-      { "label": "Grip tight and move fast — Roll 4+",  "threshold": 4 },
-      { "label": "Sprint and leap the gap — Roll 7+",   "threshold": 7 }
+      {
+        "label": "Test each step carefully — Roll 2+",
+        "threshold": 2
+      },
+      {
+        "label": "Grip tight and move fast — Roll 4+",
+        "threshold": 4
+      },
+      {
+        "label": "Sprint and leap the gap — Roll 7+",
+        "threshold": 7
+      }
     ]
   },
   {
@@ -14,9 +23,18 @@
     "tier": 1,
     "narration": "A cloaked merchant eyes you. He holds the key you need. He holds all the leverage too.",
     "options": [
-      { "label": "Barter honestly — Roll 3+",           "threshold": 3 },
-      { "label": "Spin a convincing lie — Roll 5+",     "threshold": 5 },
-      { "label": "Lift it from his pocket — Roll 7+",   "threshold": 7 }
+      {
+        "label": "Barter honestly — Roll 3+",
+        "threshold": 3
+      },
+      {
+        "label": "Spin a convincing lie — Roll 5+",
+        "threshold": 5
+      },
+      {
+        "label": "Lift it from his pocket — Roll 7+",
+        "threshold": 7
+      }
     ]
   },
   {
@@ -24,9 +42,18 @@
     "tier": 2,
     "narration": "A stone guardian wakes. It has stood watch for centuries. You have interrupted that.",
     "options": [
-      { "label": "Invoke the old truce — Roll 3+",      "threshold": 3 },
-      { "label": "Strike the joint seams — Roll 5+",    "threshold": 5 },
-      { "label": "Destroy it outright — Roll 7+",       "threshold": 7 }
+      {
+        "label": "Invoke the old truce — Roll 3+",
+        "threshold": 3
+      },
+      {
+        "label": "Strike the joint seams — Roll 5+",
+        "threshold": 5
+      },
+      {
+        "label": "Destroy it outright — Roll 7+",
+        "threshold": 7
+      }
     ]
   },
   {
@@ -34,9 +61,18 @@
     "tier": 2,
     "narration": "Pressure plates line the corridor. Every step is a wager. Welcome to my domain.",
     "options": [
-      { "label": "Map each plate slowly — Roll 4+",     "threshold": 4 },
-      { "label": "Roll across in one move — Roll 6+",   "threshold": 6 },
-      { "label": "Disable the mechanism — Roll 8+",     "threshold": 8 }
+      {
+        "label": "Map each plate slowly — Roll 4+",
+        "threshold": 4
+      },
+      {
+        "label": "Roll across in one move — Roll 6+",
+        "threshold": 6
+      },
+      {
+        "label": "Disable the mechanism — Roll 8+",
+        "threshold": 8
+      }
     ]
   },
   {
@@ -44,9 +80,18 @@
     "tier": 3,
     "narration": "The dungeon warden rises. Half dead. Twice as dangerous. It has been waiting for you specifically.",
     "options": [
-      { "label": "Negotiate your passage — Roll 5+",    "threshold": 5 },
-      { "label": "Exploit the weak shoulder — Roll 6+", "threshold": 6 },
-      { "label": "Full frontal assault — Roll 8+",      "threshold": 8 }
+      {
+        "label": "Negotiate your passage — Roll 5+",
+        "threshold": 5
+      },
+      {
+        "label": "Exploit the weak shoulder — Roll 6+",
+        "threshold": 6
+      },
+      {
+        "label": "Full frontal assault — Roll 8+",
+        "threshold": 8
+      }
     ]
   },
   {
@@ -54,9 +99,18 @@
     "tier": 3,
     "narration": "A cursed relic pulses with dark energy. It wants to be taken. Nothing that powerful wants something good.",
     "options": [
-      { "label": "Contain it carefully — Roll 4+",      "threshold": 4 },
-      { "label": "Channel its power — Roll 6+",         "threshold": 6 },
-      { "label": "Destroy it utterly — Roll 8+",        "threshold": 8 }
+      {
+        "label": "Contain it carefully — Roll 4+",
+        "threshold": 4
+      },
+      {
+        "label": "Channel its power — Roll 6+",
+        "threshold": 6
+      },
+      {
+        "label": "Destroy it utterly — Roll 8+",
+        "threshold": 8
+      }
     ]
   }
 ]

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const { text } = await request.json();
+  const { text, speed = 0.7 } = await request.json();
 
   if (!text?.trim()) {
     return NextResponse.json({ error: 'text is required' }, { status: 400 });
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify({ text, model_id: modelId, voice_settings: { speed: 0.7 } }),
+      body: JSON.stringify({ text, model_id: modelId, voice_settings: { speed } }),
     }
   );
 

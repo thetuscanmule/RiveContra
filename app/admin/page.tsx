@@ -6,13 +6,15 @@ import { useEffect, useRef, useState } from 'react';
 
 type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
-type Reactions = { greeting: string; affirmative: string[]; negative: string[] };
+type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
+type Settings  = { smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
-  const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', affirmative: [], negative: [] });
+  const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
+  const [settings,   setSettings]   = useState<Settings>({ smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000 });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -20,9 +22,10 @@ export default function AdminPage() {
   useEffect(() => {
     fetch('/api/admin/data')
       .then(r => r.json())
-      .then(({ encounters, reactions }) => {
+      .then(({ encounters, reactions, settings }) => {
         setEncounters(encounters);
         setReactions(reactions);
+        setSettings(settings);
       });
   }, []);
 
@@ -31,7 +34,7 @@ export default function AdminPage() {
     const res = await fetch('/api/admin/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ encounters, reactions }),
+      body: JSON.stringify({ encounters, reactions, settings }),
     });
     if (res.ok) {
       setStatus('saved');
@@ -96,6 +99,17 @@ export default function AdminPage() {
     setReactions(prev => ({ ...prev, greeting: v }));
   }
 
+  function setPreRoll(i: number, v: string) {
+    setReactions(prev => {
+      const p = [...prev.preRoll]; p[i] = v;
+      return { ...prev, preRoll: p };
+    });
+  }
+  function addPreRoll()         { setReactions(prev => ({ ...prev, preRoll: [...prev.preRoll, ''] })); }
+  function removePreRoll(i: number) {
+    setReactions(prev => ({ ...prev, preRoll: prev.preRoll.filter((_, idx) => idx !== i) }));
+  }
+
   function setAffirmative(i: number, v: string) {
     setReactions(prev => {
       const a = [...prev.affirmative]; a[i] = v;
@@ -154,6 +168,112 @@ export default function AdminPage() {
       </div>
 
       <div className="mx-auto max-w-5xl space-y-12 px-6 py-10">
+
+        {/* ── Settings ── */}
+        <section>
+          <SectionHeading title="Settings" />
+          <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+
+            {/* Smoothing */}
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between mb-2">
+                <FieldLabel>Jaw smoothing</FieldLabel>
+                <span className="font-mono text-xs text-gray-500">{settings.smoothing.toFixed(2)}</span>
+              </div>
+              <input
+                type="range" min={0} max={1} step={0.01}
+                value={settings.smoothing}
+                onChange={e => setSettings(s => ({ ...s, smoothing: Number(e.target.value) }))}
+                className="w-full accent-gray-700"
+              />
+              <p className="mt-1 text-xs text-gray-400">Controls how fluidly the jaw follows the audio amplitude. Higher = smoother but slower to react.</p>
+            </div>
+
+            {/* Speech speed */}
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between mb-2">
+                <FieldLabel>Speech speed</FieldLabel>
+                <span className="font-mono text-xs text-gray-500">{settings.speechSpeed.toFixed(1)}×</span>
+              </div>
+              <input
+                type="range" min={0.5} max={2.0} step={0.1}
+                value={settings.speechSpeed}
+                onChange={e => setSettings(s => ({ ...s, speechSpeed: Number(e.target.value) }))}
+                className="w-full accent-gray-700"
+              />
+              <p className="mt-1 text-xs text-gray-400">ElevenLabs playback speed. 0.7 is slower and more dramatic. 1.0 is natural pace.</p>
+            </div>
+
+            {/* Pause before greeting */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Pause before greeting</FieldLabel>
+                <p className="text-xs text-gray-400">Delay between "Begin your journey" click and the skull speaking.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={100}
+                  value={settings.pauseBeforeGreeting}
+                  onChange={e => setSettings(s => ({ ...s, pauseBeforeGreeting: Number(e.target.value) }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
+            {/* Dice reveal delay */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Dice reveal delay</FieldLabel>
+                <p className="text-xs text-gray-400">How long the dice animation plays before the result number appears. Sync this to your Rive roll animation.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={100}
+                  value={settings.pauseDiceReveal}
+                  onChange={e => setSettings(s => ({ ...s, pauseDiceReveal: Number(e.target.value) }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
+            {/* Dice roll pause */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Dice hold duration</FieldLabel>
+                <p className="text-xs text-gray-400">Total time in the dice phase. Result shows at reveal delay, then holds until this elapses.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={100}
+                  value={settings.pauseDiceRoll}
+                  onChange={e => setSettings(s => ({ ...s, pauseDiceRoll: Number(e.target.value) }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
+            {/* Pause before results */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Pause before results screen</FieldLabel>
+                <p className="text-xs text-gray-400">Delay after the final failure reaction before the results screen appears.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={100}
+                  value={settings.pauseBeforeResults}
+                  onChange={e => setSettings(s => ({ ...s, pauseBeforeResults: Number(e.target.value) }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
 
         {/* ── Greeting ── */}
         <section>
@@ -239,6 +359,30 @@ export default function AdminPage() {
               + Add encounter
             </button>
           </div>
+        </section>
+
+        {/* ── Pre-roll Lines ── */}
+        <section>
+          <SectionHeading title={`Pre-roll Lines (${reactions.preRoll.length})`} />
+          <p className="mb-3 text-xs text-gray-400">Spoken after the player picks an option, before the dice animation plays.</p>
+          <ul className="space-y-2">
+            {reactions.preRoll.map((line, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <AutoResizeTextarea
+                  value={line}
+                  onChange={v => setPreRoll(i, v)}
+                  placeholder="Short atmospheric line before the roll…"
+                />
+                <button onClick={() => removePreRoll(i)} className="mt-2.5 shrink-0 text-sm text-red-300 hover:text-red-500">×</button>
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={addPreRoll}
+            className="mt-3 w-full rounded-lg border-2 border-dashed border-gray-200 py-3 text-sm text-gray-400 transition-colors hover:border-gray-400 hover:text-gray-600"
+          >
+            + Add line
+          </button>
         </section>
 
         {/* ── Reaction Lines ── */}

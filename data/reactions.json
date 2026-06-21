@@ -1,5 +1,13 @@
 {
   "greeting": "Welcome... mortal. You dare enter my domain? Hm. Let us see how long that nerve holds.",
+  "preRoll": [
+    "The bones decide...",
+    "Let us see what fate has in store.",
+    "Roll then, mortal. The dungeon does not wait.",
+    "Every roll is a conversation with death.",
+    "The dice remember nothing. Pity you do.",
+    "This moment has always been coming."
+  ],
   "affirmative": [
     "Not bad, mortal. You may yet surprise me.",
     "Fortune nods… for now. Do not grow comfortable.",

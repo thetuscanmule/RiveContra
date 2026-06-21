@@ -60,7 +60,11 @@ export function pickReaction(
   lastLine: string,
   lines: ReactionLines,
 ): string {
-  const pool = lines[kind];
+  return pickLine(lastLine, lines[kind]);
+}
+
+/** Pick any line from a string pool, avoiding an immediate repeat. */
+export function pickLine(lastLine: string, pool: string[]): string {
   const candidates = pool.filter(l => l !== lastLine);
   return rand(candidates.length > 0 ? candidates : pool);
 }

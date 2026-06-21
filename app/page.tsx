@@ -2,14 +2,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { GameRive } from '@/components/GameRive';
 import { ENCOUNTERS } from '@/lib/game/encounters';
-import { GREETING, REACTION_LINES } from '@/lib/game/reactionLines';
-import { pickEncounter, resolveRoll, pickReaction, stepRange } from '@/lib/game/engine';
+import { GREETING, PRE_ROLL_LINES, REACTION_LINES } from '@/lib/game/reactionLines';
+import { pickEncounter, resolveRoll, pickReaction, pickLine, stepRange } from '@/lib/game/engine';
+import { SETTINGS } from '@/lib/game/settings';
 import type { Encounter, RollResult } from '@/lib/game/types';
 
 // ─── Audio constants ────────────────────────────────────────────────────────
-const GAIN      = 7;
-const SMOOTHING = 0.95;
-const MAX_JAW   = 0.95;
+const GAIN    = 7;
+const MAX_JAW = 0.95;
 
 // ─── Music bed ──────────────────────────────────────────────────────────────
 // Tries to load /music-bed.mp3 (loop it). Falls back to oscillator drone.
@@ -54,15 +54,16 @@ async function startMusicBed(ctx: AudioContext): Promise<void> {
 }
 
 // ─── Phase type ─────────────────────────────────────────────────────────────
-type Phase = 'start' | 'greeting' | 'presenting' | 'resolving' | 'reacting' | 'results';
+type Phase = 'start' | 'greeting' | 'presenting' | 'pre-rolling' | 'resolving' | 'reacting' | 'results';
 
 const PHASE_TO_SCENE: Record<Phase, number> = {
-  start:      0,
-  greeting:   0,
-  presenting: 0,
-  resolving:  1,
-  reacting:   0,
-  results:    2,
+  start:          0,
+  greeting:       0,
+  presenting:     0,
+  'pre-rolling':  0,
+  resolving:      1,
+  reacting:       0,
+  results:        2,
 };
 
 // ─── Page ───────────────────────────────────────────────────────────────────
@@ -75,6 +76,7 @@ export default function Home() {
   const [rollResult,    setRollResult]    = useState<RollResult | null>(null);
   const [reactionLine,  setReactionLine]  = useState('');
   const [lastReaction,  setLastReaction]  = useState('');
+  const [diceRevealed,  setDiceRevealed]  = useState(false);
 
   // Audio state
   const [jawOpen,    setJawOpen]    = useState(0);
@@ -88,10 +90,12 @@ export default function Home() {
   const smoothedRef    = useRef(0);
   const voiceCache     = useRef(new Map<string, string>());
   // Mirror rollResult in a ref so reacting-phase callbacks always read fresh value
-  const rollResultRef  = useRef<RollResult | null>(null);
+  const rollResultRef   = useRef<RollResult | null>(null);
   // Mirror streak + usedIds so reacting callbacks read current values
-  const streakRef      = useRef(0);
-  const usedIdsRef     = useRef<Set<string>>(new Set());
+  const streakRef       = useRef(0);
+  const usedIdsRef      = useRef<Set<string>>(new Set());
+  // Track last pre-roll line to avoid immediate repeats
+  const lastPreRollRef  = useRef('');
 
   // Keep refs in sync
   useEffect(() => { rollResultRef.current = rollResult; }, [rollResult]);
@@ -122,7 +126,7 @@ export default function Home() {
       const res = await fetch('/api/speak', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, speed: SETTINGS.speechSpeed }),
       });
       if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
       const data = await res.json();
@@ -161,7 +165,7 @@ export default function Home() {
         }
         const rms     = Math.sqrt(sumSq / dataArr.length);
         const clamped = Math.min(rms * GAIN, MAX_JAW);
-        smoothedRef.current = smoothedRef.current * SMOOTHING + clamped * (1 - SMOOTHING);
+        smoothedRef.current = smoothedRef.current * SETTINGS.smoothing + clamped * (1 - SETTINGS.smoothing);
         setJawOpen(smoothedRef.current);
         rafRef.current = requestAnimationFrame(tick);
       };
@@ -222,18 +226,33 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, encounter?.id]);
 
-  // resolving: show dice 2 s, then pick reaction + go to reacting
+  // pre-rolling: speak a pre-roll line, then hand off to resolving (dice anim)
+  useEffect(() => {
+    if (phase !== 'pre-rolling') return;
+    let active = true;
+    const line = pickLine(lastPreRollRef.current, PRE_ROLL_LINES);
+    lastPreRollRef.current = line;
+    speak(line).then(() => {
+      if (active) setPhase('resolving');
+    }).catch(console.error);
+    return () => { active = false; stopSpeech(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  // resolving: reveal dice number after pauseDiceReveal, then transition after pauseDiceRoll
   useEffect(() => {
     if (phase !== 'resolving' || !rollResultRef.current) return;
-    const timer = setTimeout(() => {
+    setDiceRevealed(false);
+    const revealTimer = setTimeout(() => setDiceRevealed(true), SETTINGS.pauseDiceReveal);
+    const doneTimer   = setTimeout(() => {
       const result = rollResultRef.current!;
       const kind   = result.success ? 'affirmative' : 'negative';
       const line   = pickReaction(kind, lastReaction, REACTION_LINES);
       setReactionLine(line);
       setLastReaction(line);
       setPhase('reacting');
-    }, 2000);
-    return () => clearTimeout(timer);
+    }, SETTINGS.pauseDiceRoll);
+    return () => { clearTimeout(revealTimer); clearTimeout(doneTimer); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
@@ -253,7 +272,7 @@ export default function Home() {
         setEncounter(nextEnc);
         setPhase('presenting');
       } else {
-        setPhase('results');
+        setTimeout(() => { if (active) setPhase('results'); }, SETTINGS.pauseBeforeResults);
       }
     }).catch(console.error);
     return () => { active = false; stopSpeech(); };
@@ -264,14 +283,14 @@ export default function Home() {
 
   const handleStart = () => {
     unlock();
-    setPhase('greeting');
+    setTimeout(() => setPhase('greeting'), SETTINGS.pauseBeforeGreeting);
   };
 
   const handleOption = (threshold: number) => {
     const result = resolveRoll(threshold);
     rollResultRef.current = result;
     setRollResult(result);
-    setPhase('resolving');
+    setPhase('pre-rolling');
   };
 
   const handleReplay = () => {
@@ -331,8 +350,8 @@ export default function Home() {
           <div className="relative">
             <GameRive scene={riveScene} jawOpen={jawOpen} />
 
-            {/* Dice result overlay (scene=1) */}
-            {phase === 'resolving' && rollResult && (
+            {/* Dice result overlay (scene=1) — hidden until pauseDiceReveal elapses */}
+            {phase === 'resolving' && diceRevealed && rollResult && (
               <div className="absolute inset-0 flex flex-col items-center justify-center
                               bg-gray-950/70 rounded-xl gap-3">
                 <p className="text-6xl font-black text-white">{rollResult.roll}</p>
@@ -381,7 +400,7 @@ export default function Home() {
           </div>
 
           {/* Encounter narration + options (scene=0 phases) */}
-          {(phase === 'presenting' || phase === 'reacting' || phase === 'greeting') &&
+          {(phase === 'presenting' || phase === 'pre-rolling' || phase === 'reacting' || phase === 'greeting') &&
             encounter && (
             <div className="w-full max-w-lg space-y-4">
               <p className="text-gray-300 text-sm text-center leading-relaxed min-h-[3rem]">
