@@ -208,7 +208,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between px-5 py-4">
               <div>
                 <FieldLabel>Pause before greeting</FieldLabel>
-                <p className="text-xs text-gray-400">Delay between "Begin your journey" click and the skull speaking.</p>
+                <p className="text-xs text-gray-400">Delay between &ldquo;Begin your journey&rdquo; click and the skull speaking.</p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0 ml-6">
                 <input
