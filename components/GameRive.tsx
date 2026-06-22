@@ -17,10 +17,11 @@ interface Props {
 }
 
 export function GameRive({ scene, jawOpen }: Props) {
-  const { stateMachine, inputScene, inputJawOpen } = SETTINGS.rive;
+  const { artboard, stateMachine, inputScene, inputJawOpen } = SETTINGS.rive;
 
   const { rive, RiveComponent } = useRive({
     src: '/SkullRive.riv',
+    artboard,
     stateMachines: stateMachine,
     autoplay: true,
     onLoadError: (e) => console.error('[GameRive] load error', e),

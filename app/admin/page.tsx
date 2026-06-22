@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
-type RiveConfig = { stateMachine: string; inputScene: string; inputJawOpen: string };
+type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string };
 type Settings   = { rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ type Settings   = { rive: RiveConfig; smoothing: number; speechSpeed: number; pa
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ rive: { stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000 });
+  const [settings,   setSettings]   = useState<Settings>({ rive: { artboard: 'DM', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000 });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -178,6 +178,13 @@ export default function AdminPage() {
             A mismatch causes silent failure — the input simply won&apos;t respond.
           </p>
           <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+
+            <RiveInputRow
+              label="Artboard name"
+              description="The artboard to load from the .riv file"
+              value={settings.rive.artboard}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, artboard: v } }))}
+            />
 
             <RiveInputRow
               label="State machine name"

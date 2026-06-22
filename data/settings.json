@@ -1,5 +1,6 @@
 {
   "rive": {
+    "artboard": "DM",
     "stateMachine": "Game",
     "inputScene": "scene",
     "inputJawOpen": "jawOpen"

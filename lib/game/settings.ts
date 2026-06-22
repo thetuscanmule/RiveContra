@@ -2,6 +2,7 @@ import data from '@/data/settings.json';
 
 export const SETTINGS = data as {
   rive: {
+    artboard:     string;
     stateMachine: string;
     inputScene:   string;
     inputJawOpen: string;
