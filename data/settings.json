@@ -2,15 +2,16 @@
   "rive": {
     "artboard": "",
     "stateMachine": "Game",
-    "inputScene": "scene",
+    "inputScene": "Scene",
     "inputJawOpen": "jawOpen",
     "inputRoll": "roll",
     "inputEmotion": "emotion"
   },
   "smoothing": 0.95,
   "speechSpeed": 0.7,
-  "pauseBeforeGreeting": 1000,
+  "pauseBeforeGreeting": 2000,
   "pauseDiceReveal": 5000,
   "pauseDiceRoll": 8000,
-  "pauseBeforeResults": 2000
+  "pauseBeforeResults": 2000,
+  "pauseUiFade": 400
 }

@@ -80,8 +80,10 @@ export default function Home() {
   const [diceRevealed,  setDiceRevealed]  = useState(false);
 
   // Audio state
-  const [jawOpen,    setJawOpen]    = useState(0);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [jawOpen,        setJawOpen]        = useState(0);
+  const [isSpeaking,     setIsSpeaking]     = useState(false);
+  const [isStartFading,  setIsStartFading]  = useState(false);
+  const [showStartButton, setShowStartButton] = useState(true);
 
   // Audio refs (stable across renders)
   const audioCtxRef    = useRef<AudioContext | null>(null);
@@ -283,6 +285,7 @@ export default function Home() {
   // ── Event handlers ─────────────────────────────────────────────────────────
 
   const handleStart = () => {
+    setIsStartFading(true);
     unlock();
     setTimeout(() => setPhase('greeting'), SETTINGS.pauseBeforeGreeting);
   };
@@ -297,17 +300,19 @@ export default function Home() {
   const handleReplay = () => {
     stopSpeech();
     setStreak(0);
-    streakRef.current = 0;
+    streakRef.current     = 0;
     setRollResult(null);
     rollResultRef.current = null;
     setReactionLine('');
     setLastReaction('');
-    const enc = pickEncounter(0, new Set(), ENCOUNTERS);
-    const ids = new Set([enc.id]);
-    setEncounter(enc);
-    setUsedIds(ids);
-    usedIdsRef.current = ids;
-    setPhase('presenting');
+    setEncounter(null);
+    setUsedIds(new Set());
+    usedIdsRef.current = new Set();
+    setIsStartFading(false);
+    setShowStartButton(false); // skip showing the begin button on replay
+    setPhase('start');
+    unlock();
+    setTimeout(() => setPhase('greeting'), SETTINGS.pauseBeforeGreeting);
   };
 
   const riveScene   = PHASE_TO_SCENE[phase];
@@ -321,128 +326,133 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-950 flex flex-col items-center justify-center gap-6 p-8">
 
-      {/* ── Start screen ── */}
-      {phase === 'start' && (
-        <div className="flex flex-col items-center gap-8 text-center">
-          <h1 className="text-4xl font-bold tracking-widest text-green-400 uppercase">
+      {/* Streak bar — hidden on start screen */}
+      {phase !== 'start' && (
+        <div className="flex items-center justify-between w-full max-w-lg">
+          <span className="text-xs uppercase tracking-widest text-gray-600">
             Dice Quest
-          </h1>
-          <p className="text-gray-400 max-w-sm">
-            A dice-driven survival game. How long can your streak hold?
-          </p>
-          <button
-            onClick={handleStart}
-            className="rounded-xl bg-green-700 px-10 py-4 text-lg font-bold text-white
-                       hover:bg-green-600 transition-colors tracking-wide"
-          >
-            Begin your journey
-          </button>
+          </span>
+          <span className="font-mono text-sm text-green-500">
+            Streak: {streak}
+          </span>
         </div>
       )}
 
-      {/* ── Active game ── */}
-      {phase !== 'start' && (
-        <>
-          <div className="flex items-center justify-between w-full max-w-lg">
-            <span className="text-xs uppercase tracking-widest text-gray-600">
+      {/* Rive canvas — always rendered so intro plays on page load */}
+      <div className="relative">
+        <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} />
+
+        {/* ── Start overlay — hidden on replay (showStartButton=false) ── */}
+        {phase === 'start' && showStartButton && (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-8 text-center"
+            style={{
+              opacity:       isStartFading ? 0 : 1,
+              transition:    `opacity ${SETTINGS.pauseUiFade}ms ease-out`,
+              pointerEvents: isStartFading ? 'none' : 'auto',
+            }}
+          >
+            <h1 className="text-4xl font-bold tracking-widest text-green-400 uppercase">
               Dice Quest
-            </span>
-            <span className="font-mono text-sm text-green-500">
-              Streak: {streak}
-            </span>
+            </h1>
+            <p className="text-gray-400 max-w-sm text-sm">
+              A dice-driven survival game. How long can your streak hold?
+            </p>
+            <button
+              onClick={handleStart}
+              className="rounded-xl bg-green-700 px-10 py-4 text-lg font-bold text-white
+                         hover:bg-green-600 transition-colors tracking-wide"
+            >
+              Begin your journey
+            </button>
           </div>
+        )}
 
-          {/* Rive canvas + dice/results overlays */}
-          <div className="relative">
-            <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} />
-
-            {/* Dice result overlay (scene=1) — hidden until pauseDiceReveal elapses */}
-            {phase === 'resolving' && diceRevealed && rollResult && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center
-                              bg-gray-950/70 rounded-xl gap-3">
-                <p className="text-6xl font-black text-white">{rollResult.roll}</p>
-                <p className="text-sm text-gray-300">
-                  Needed {rollResult.threshold} or above
-                </p>
-                <p className={`text-xl font-bold tracking-widest ${
-                  rollResult.success ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {rollResult.success ? '✓ SUCCESS' : '✗ FAILURE'}
-                </p>
-                {rollResult.success && (
-                  <p className="text-green-300 text-sm font-mono">
-                    +{rollResult.steps} steps forward
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Results overlay (scene=2) */}
-            {phase === 'results' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center
-                              bg-gray-950/80 rounded-xl gap-6">
-                <p className="text-gray-400 text-sm uppercase tracking-widest">
-                  The run ends here
-                </p>
-                <p className="text-6xl font-black text-white">{streak}</p>
-                <p className="text-gray-500 text-sm">
-                  {streak === 1 ? 'encounter survived' : 'encounters survived'}
-                </p>
-                <button
-                  onClick={handleReplay}
-                  className="mt-2 rounded-lg bg-green-700 px-8 py-3 font-semibold
-                             text-white hover:bg-green-600 transition-colors"
-                >
-                  Play again
-                </button>
-              </div>
-            )}
-
-            {/* Jaw debug */}
-            <span className="absolute bottom-2 right-3 font-mono text-xs
-                             tabular-nums text-green-700">
-              jaw {jawOpen.toFixed(3)}
-            </span>
-          </div>
-
-          {/* Encounter narration + options (scene=0 phases) */}
-          {(phase === 'presenting' || phase === 'pre-rolling' || phase === 'reacting' || phase === 'greeting') &&
-            encounter && (
-            <div className="w-full max-w-lg space-y-4">
-              <p className="text-gray-300 text-sm text-center leading-relaxed min-h-[3rem]">
-                {encounter.narration}
+        {/* Dice result overlay — hidden until pauseDiceReveal elapses */}
+        {phase === 'resolving' && diceRevealed && rollResult && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center
+                          bg-gray-950/70 rounded-xl gap-3">
+            <p className="text-6xl font-black text-white">{rollResult.roll}</p>
+            <p className="text-sm text-gray-300">
+              Needed {rollResult.threshold} or above
+            </p>
+            <p className={`text-xl font-bold tracking-widest ${
+              rollResult.success ? 'text-green-400' : 'text-red-400'
+            }`}>
+              {rollResult.success ? '✓ SUCCESS' : '✗ FAILURE'}
+            </p>
+            {rollResult.success && (
+              <p className="text-green-300 text-sm font-mono">
+                +{rollResult.steps} steps forward
               </p>
+            )}
+          </div>
+        )}
 
-              {phase === 'presenting' && (
-                <div className="flex flex-col gap-2">
-                  {encounter.options.map((opt) => (
-                    <button
-                      key={opt.threshold}
-                      onClick={() => handleOption(opt.threshold)}
-                      disabled={isSpeaking}
-                      className="w-full rounded-lg border border-gray-700 bg-gray-800
-                                 px-4 py-3 text-left text-sm text-gray-200
-                                 hover:border-green-600 hover:bg-gray-700
-                                 disabled:opacity-40 disabled:cursor-not-allowed
-                                 transition-colors flex items-center justify-between gap-4"
-                    >
-                      <span>{opt.label}</span>
-                      <span className="shrink-0 text-xs font-mono text-green-500">
-                        {stepRange(opt.threshold)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
+        {/* Results overlay */}
+        {phase === 'results' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center
+                          bg-gray-950/80 rounded-xl gap-6">
+            <p className="text-gray-400 text-sm uppercase tracking-widest">
+              The run ends here
+            </p>
+            <p className="text-6xl font-black text-white">{streak}</p>
+            <p className="text-gray-500 text-sm">
+              {streak === 1 ? 'encounter survived' : 'encounters survived'}
+            </p>
+            <button
+              onClick={handleReplay}
+              className="mt-2 rounded-lg bg-green-700 px-8 py-3 font-semibold
+                         text-white hover:bg-green-600 transition-colors"
+            >
+              Play again
+            </button>
+          </div>
+        )}
 
-              {phase === 'reacting' && (
-                <p className="text-center text-xs text-gray-600 italic">
-                  {isSpeaking ? 'Speaking…' : ''}
-                </p>
-              )}
+        {/* Jaw debug */}
+        <span className="absolute bottom-2 right-3 font-mono text-xs
+                         tabular-nums text-green-700">
+          jaw {jawOpen.toFixed(3)}
+        </span>
+      </div>
+
+      {/* Encounter narration + options */}
+      {(phase === 'presenting' || phase === 'pre-rolling' || phase === 'reacting' || phase === 'greeting') &&
+        encounter && (
+        <div className="w-full max-w-lg space-y-4">
+          <p className="text-gray-300 text-sm text-center leading-relaxed min-h-[3rem]">
+            {encounter.narration}
+          </p>
+
+          {phase === 'presenting' && (
+            <div className="flex flex-col gap-2">
+              {encounter.options.map((opt) => (
+                <button
+                  key={opt.threshold}
+                  onClick={() => handleOption(opt.threshold)}
+                  disabled={isSpeaking}
+                  className="w-full rounded-lg border border-gray-700 bg-gray-800
+                             px-4 py-3 text-left text-sm text-gray-200
+                             hover:border-green-600 hover:bg-gray-700
+                             disabled:opacity-40 disabled:cursor-not-allowed
+                             transition-colors flex items-center justify-between gap-4"
+                >
+                  <span>{opt.label}</span>
+                  <span className="shrink-0 text-xs font-mono text-green-500">
+                    {stepRange(opt.threshold)}
+                  </span>
+                </button>
+              ))}
             </div>
           )}
-        </>
+
+          {phase === 'reacting' && (
+            <p className="text-center text-xs text-gray-600 italic">
+              {isSpeaking ? 'Speaking…' : ''}
+            </p>
+          )}
+        </div>
       )}
     </main>
   );

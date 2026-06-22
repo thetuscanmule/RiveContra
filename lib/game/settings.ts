@@ -15,4 +15,5 @@ export const SETTINGS = data as {
   pauseDiceReveal:      number;
   pauseDiceRoll:        number;
   pauseBeforeResults:   number;
+  pauseUiFade:          number;
 };
