@@ -5,14 +5,19 @@ import { useRive, useStateMachineInput } from '@rive-app/react-webgl2';
 import { SETTINGS } from '@/lib/game/settings';
 
 interface Props {
-  scene:   number; // 0=intro 1=avatar 2=dice 3=winlose
-  jawOpen: number; // 0–1  (audio amplitude → mouth)
-  roll:    number; // 1–8  (active during dice scene)
-  emotion: number; // 0=idle 1=win 2=lose
+  scene:       number;           // 0=intro 1=avatar 2=dice 3=winlose
+  jawOpen:     number;           // 0–1  (audio amplitude → mouth)
+  roll:        number;           // 1–8  (active during dice scene)
+  emotion:     number;           // 0=idle 1=win 2=lose
+  diceOutcome: 'win' | 'fail' | null; // fires dicewin/dicefail trigger once at reveal
 }
 
-export function GameRive({ scene, jawOpen, roll, emotion }: Props) {
-  const { artboard, stateMachine, inputScene, inputJawOpen, inputRoll, inputEmotion } = SETTINGS.rive;
+export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome }: Props) {
+  const {
+    artboard, stateMachine,
+    inputScene, inputJawOpen, inputRoll, inputEmotion,
+    inputDiceWin, inputDiceFail,
+  } = SETTINGS.rive;
 
   const { rive, RiveComponent } = useRive({
     src: '/SkullRive.riv',
@@ -22,15 +27,24 @@ export function GameRive({ scene, jawOpen, roll, emotion }: Props) {
     onLoadError: (e) => console.error('[GameRive] load error', e),
   });
 
-  const sceneInput   = useStateMachineInput(rive, stateMachine, inputScene);
-  const jawInput     = useStateMachineInput(rive, stateMachine, inputJawOpen);
-  const rollInput    = useStateMachineInput(rive, stateMachine, inputRoll);
-  const emotionInput = useStateMachineInput(rive, stateMachine, inputEmotion);
+  const sceneInput    = useStateMachineInput(rive, stateMachine, inputScene);
+  const jawInput      = useStateMachineInput(rive, stateMachine, inputJawOpen);
+  const rollInput     = useStateMachineInput(rive, stateMachine, inputRoll);
+  const emotionInput  = useStateMachineInput(rive, stateMachine, inputEmotion);
+  const diceWinInput  = useStateMachineInput(rive, stateMachine, inputDiceWin);
+  const diceFailInput = useStateMachineInput(rive, stateMachine, inputDiceFail);
 
   useEffect(() => { if (sceneInput)   sceneInput.value   = scene;   }, [sceneInput,   scene]);
   useEffect(() => { if (jawInput)     jawInput.value     = jawOpen; }, [jawInput,     jawOpen]);
   useEffect(() => { if (rollInput)    rollInput.value    = roll;    }, [rollInput,    roll]);
   useEffect(() => { if (emotionInput) emotionInput.value = emotion; }, [emotionInput, emotion]);
+
+  // Triggers are one-shot — fire once when diceOutcome is set, not on every render.
+  useEffect(() => {
+    if (!diceOutcome) return;
+    if (diceOutcome === 'win'  && diceWinInput)  diceWinInput.fire();
+    if (diceOutcome === 'fail' && diceFailInput) diceFailInput.fire();
+  }, [diceOutcome, diceWinInput, diceFailInput]);
 
   return (
     <div style={{ width: 480, height: 480 }}>

@@ -5,7 +5,9 @@
     "inputScene": "Scene",
     "inputJawOpen": "jawOpen",
     "inputRoll": "roll",
-    "inputEmotion": "emotion"
+    "inputEmotion": "emotion",
+    "inputDiceWin": "dicewin",
+    "inputDiceFail": "dicefail"
   },
   "smoothing": 0.95,
   "speechSpeed": 0.7,

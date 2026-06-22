@@ -321,6 +321,11 @@ export default function Home() {
   const riveEmotion = (phase === 'reacting' || phase === 'results')
     ? (rollResult?.success ? 1 : 2)
     : 0;
+  // fires dicewin/dicefail trigger the moment the dice result is revealed
+  const riveDiceOutcome: 'win' | 'fail' | null =
+    (phase === 'resolving' && diceRevealed && rollResult)
+      ? (rollResult.success ? 'win' : 'fail')
+      : null;
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -340,7 +345,7 @@ export default function Home() {
 
       {/* Rive canvas — always rendered so intro plays on page load */}
       <div className="relative">
-        <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} />
+        <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} />
 
         {/* ── Start overlay — hidden on replay (showStartButton=false) ── */}
         {phase === 'start' && showStartButton && (

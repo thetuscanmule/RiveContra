@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
-type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string };
+type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
 type Settings   = { rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ type Settings   = { rive: RiveConfig; smoothing: number; speechSpeed: number; pa
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400 });
+  const [settings,   setSettings]   = useState<Settings>({ rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400 });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -219,6 +219,20 @@ export default function AdminPage() {
               description="Number input on the Game SM — 0=idle · 1=win · 2=lose"
               value={settings.rive.inputEmotion}
               onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputEmotion: v } }))}
+            />
+
+            <RiveInputRow
+              label="Dice win trigger"
+              description="Trigger input on the Game SM — fired once when a winning roll is revealed"
+              value={settings.rive.inputDiceWin}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputDiceWin: v } }))}
+            />
+
+            <RiveInputRow
+              label="Dice fail trigger"
+              description="Trigger input on the Game SM — fired once when a failing roll is revealed"
+              value={settings.rive.inputDiceFail}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputDiceFail: v } }))}
             />
 
           </div>

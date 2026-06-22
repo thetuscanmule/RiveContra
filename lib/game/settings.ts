@@ -6,8 +6,10 @@ export const SETTINGS = data as {
     stateMachine: string;
     inputScene:   string;
     inputJawOpen: string;
-    inputRoll:    string;
-    inputEmotion: string;
+    inputRoll:     string;
+    inputEmotion:  string;
+    inputDiceWin:  string;
+    inputDiceFail: string;
   };
   smoothing:            number;
   speechSpeed:          number;
