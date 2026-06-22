@@ -56,14 +56,15 @@ async function startMusicBed(ctx: AudioContext): Promise<void> {
 // ─── Phase type ─────────────────────────────────────────────────────────────
 type Phase = 'start' | 'greeting' | 'presenting' | 'pre-rolling' | 'resolving' | 'reacting' | 'results';
 
+// 0=intro  1=avatar  2=dice  3=winlose
 const PHASE_TO_SCENE: Record<Phase, number> = {
   start:          0,
-  greeting:       0,
-  presenting:     0,
-  'pre-rolling':  0,
-  resolving:      1,
-  reacting:       0,
-  results:        2,
+  greeting:       1,
+  presenting:     1,
+  'pre-rolling':  1,
+  resolving:      2,
+  reacting:       1,
+  results:        3,
 };
 
 // ─── Page ───────────────────────────────────────────────────────────────────
@@ -309,7 +310,12 @@ export default function Home() {
     setPhase('presenting');
   };
 
-  const riveScene = PHASE_TO_SCENE[phase];
+  const riveScene   = PHASE_TO_SCENE[phase];
+  const riveRoll    = rollResult?.roll ?? 0;
+  // emotion: 1=win during/after success, 2=lose during/after failure, 0=idle
+  const riveEmotion = (phase === 'reacting' || phase === 'results')
+    ? (rollResult?.success ? 1 : 2)
+    : 0;
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -348,7 +354,7 @@ export default function Home() {
 
           {/* Rive canvas + dice/results overlays */}
           <div className="relative">
-            <GameRive scene={riveScene} jawOpen={jawOpen} />
+            <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} />
 
             {/* Dice result overlay (scene=1) — hidden until pauseDiceReveal elapses */}
             {phase === 'resolving' && diceRevealed && rollResult && (

@@ -1,42 +1,36 @@
 'use client';
-// One persistent Rive file. React touches only the flat top-level inputs:
-//   scene   — Number: 0 = skull/playing, 1 = dice/rolling, 2 = results
-//   jawOpen — Number: 0–1, forwarded to the skull nested artboard
-//
-// Input names and the state machine name are configured in data/settings.json
-// under the "rive" key so they can be updated from the admin panel without
-// touching code.
 
 import { useEffect } from 'react';
 import { useRive, useStateMachineInput } from '@rive-app/react-webgl2';
 import { SETTINGS } from '@/lib/game/settings';
 
 interface Props {
-  scene: number;   // 0 | 1 | 2
-  jawOpen: number; // 0–1
+  scene:   number; // 0=intro 1=avatar 2=dice 3=winlose
+  jawOpen: number; // 0–1  (audio amplitude → mouth)
+  roll:    number; // 1–8  (active during dice scene)
+  emotion: number; // 0=idle 1=win 2=lose
 }
 
-export function GameRive({ scene, jawOpen }: Props) {
-  const { artboard, stateMachine, inputScene, inputJawOpen } = SETTINGS.rive;
+export function GameRive({ scene, jawOpen, roll, emotion }: Props) {
+  const { artboard, stateMachine, inputScene, inputJawOpen, inputRoll, inputEmotion } = SETTINGS.rive;
 
   const { rive, RiveComponent } = useRive({
     src: '/SkullRive.riv',
-    artboard,
+    ...(artboard ? { artboard } : {}),
     stateMachines: stateMachine,
     autoplay: true,
     onLoadError: (e) => console.error('[GameRive] load error', e),
   });
 
-  const sceneInput = useStateMachineInput(rive, stateMachine, inputScene);
-  const jawInput   = useStateMachineInput(rive, stateMachine, inputJawOpen);
+  const sceneInput   = useStateMachineInput(rive, stateMachine, inputScene);
+  const jawInput     = useStateMachineInput(rive, stateMachine, inputJawOpen);
+  const rollInput    = useStateMachineInput(rive, stateMachine, inputRoll);
+  const emotionInput = useStateMachineInput(rive, stateMachine, inputEmotion);
 
-  useEffect(() => {
-    if (sceneInput) sceneInput.value = scene;
-  }, [sceneInput, scene]);
-
-  useEffect(() => {
-    if (jawInput) jawInput.value = jawOpen;
-  }, [jawInput, jawOpen]);
+  useEffect(() => { if (sceneInput)   sceneInput.value   = scene;   }, [sceneInput,   scene]);
+  useEffect(() => { if (jawInput)     jawInput.value     = jawOpen; }, [jawInput,     jawOpen]);
+  useEffect(() => { if (rollInput)    rollInput.value    = roll;    }, [rollInput,    roll]);
+  useEffect(() => { if (emotionInput) emotionInput.value = emotion; }, [emotionInput, emotion]);
 
   return (
     <div style={{ width: 480, height: 480 }}>

@@ -1,9 +1,11 @@
 {
   "rive": {
-    "artboard": "DM",
+    "artboard": "",
     "stateMachine": "Game",
     "inputScene": "scene",
-    "inputJawOpen": "jawOpen"
+    "inputJawOpen": "jawOpen",
+    "inputRoll": "roll",
+    "inputEmotion": "emotion"
   },
   "smoothing": 0.95,
   "speechSpeed": 0.7,

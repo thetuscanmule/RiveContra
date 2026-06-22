@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
-type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string };
+type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string };
 type Settings   = { rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ type Settings   = { rive: RiveConfig; smoothing: number; speechSpeed: number; pa
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ rive: { artboard: 'DM', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000 });
+  const [settings,   setSettings]   = useState<Settings>({ rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000 });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -202,9 +202,23 @@ export default function AdminPage() {
 
             <RiveInputRow
               label="Jaw open input"
-              description="Number input (0–1) driving the jaw / mouth rig from audio amplitude"
+              description="Number input (0–1) on the Game SM driving the jaw Blend 1D state"
               value={settings.rive.inputJawOpen}
               onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputJawOpen: v } }))}
+            />
+
+            <RiveInputRow
+              label="Roll input"
+              description="Number input (1–8) on the Game SM selecting the dice face shown during resolving"
+              value={settings.rive.inputRoll}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputRoll: v } }))}
+            />
+
+            <RiveInputRow
+              label="Emotion input"
+              description="Number input on the Game SM — 0=idle · 1=win · 2=lose"
+              value={settings.rive.inputEmotion}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputEmotion: v } }))}
             />
 
           </div>
