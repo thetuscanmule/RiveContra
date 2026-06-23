@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { GradientTheme, Ring, ThemeKey } from '@/lib/game/settings';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -8,14 +9,14 @@ type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number };
+type Settings   = { background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; riveScale: number };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400 });
+  const [settings,   setSettings]   = useState<Settings>({ background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, riveScale: 1.0 });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -170,6 +171,47 @@ export default function AdminPage() {
 
       <div className="mx-auto max-w-5xl space-y-12 px-6 py-10">
 
+        {/* ── Background ── */}
+        <section>
+          <SectionHeading title="Background" />
+
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Gradient themes</h3>
+          <p className="mb-3 text-xs text-gray-400">
+            Three radial gradient presets. The game crossfades between them during win/lose moments.
+          </p>
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {(['default', 'win', 'lose'] as ThemeKey[]).map(key => (
+              <GradientThemeCard
+                key={key}
+                themeKey={key}
+                theme={settings.background.themes[key]}
+                onChange={updated => setSettings(s => ({
+                  ...s,
+                  background: { themes: { ...s.background.themes, [key]: updated } },
+                }))}
+              />
+            ))}
+          </div>
+
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Rings</h3>
+          <p className="mb-3 text-xs text-gray-400">
+            Two concentric ring layers rendered behind the game. Upload an SVG texture for each. Changes take effect after saving and reloading.
+          </p>
+          <div className="space-y-4">
+            {settings.rings.map((ring, i) => (
+              <RingCard
+                key={i}
+                index={i}
+                ring={ring}
+                onChange={updated => setSettings(s => ({
+                  ...s,
+                  rings: s.rings.map((r, idx) => idx === i ? updated : r),
+                }))}
+              />
+            ))}
+          </div>
+        </section>
+
         {/* ── Rive Inputs ── */}
         <section>
           <SectionHeading title="Rive Inputs" />
@@ -273,6 +315,23 @@ export default function AdminPage() {
               <p className="mt-1 text-xs text-gray-400">ElevenLabs playback speed. 0.7 is slower and more dramatic. 1.0 is natural pace.</p>
             </div>
 
+            {/* Rive canvas scale */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Rive canvas scale</FieldLabel>
+                <p className="text-xs text-gray-400">Multiplier on the base 480 × 480 canvas. 1.5 = 720 × 720.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0.25} max={4} step={0.05}
+                  value={settings.riveScale}
+                  onChange={e => setSettings(s => ({ ...s, riveScale: Number(e.target.value) }))}
+                  className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">×</span>
+              </div>
+            </div>
+
             {/* Pause before greeting */}
             <div className="flex items-center justify-between px-5 py-4">
               <div>
@@ -359,6 +418,12 @@ export default function AdminPage() {
             </div>
 
           </div>
+        </section>
+
+        {/* ── Game Timeline ── */}
+        <section>
+          <SectionHeading title="Game Timeline" />
+          <GameTimeline settings={settings} setSettings={setSettings} />
         </section>
 
         {/* ── Greeting ── */}
@@ -565,6 +630,359 @@ function RiveInputRow({
         spellCheck={false}
         className="w-48 shrink-0 rounded border border-gray-200 px-3 py-1.5 font-mono text-sm text-gray-800 focus:border-gray-400 focus:outline-none"
       />
+    </div>
+  );
+}
+
+function ColorRow({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3">
+      <FieldLabel>{label}</FieldLabel>
+      <div className="flex items-center gap-2 shrink-0 ml-4">
+        <input
+          type="color"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className="h-7 w-10 cursor-pointer rounded border border-gray-200 p-0.5"
+        />
+        <input
+          type="text"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          spellCheck={false}
+          className="w-20 rounded border border-gray-200 px-2 py-1 font-mono text-xs uppercase text-gray-700 focus:border-gray-400 focus:outline-none"
+        />
+      </div>
+    </div>
+  );
+}
+
+function GradientThemeCard({
+  themeKey,
+  theme,
+  onChange,
+}: {
+  themeKey: ThemeKey;
+  theme: GradientTheme;
+  onChange: (t: GradientTheme) => void;
+}) {
+  const label   = { default: 'Default', win: 'Win', lose: 'Lose' }[themeKey];
+  const border  = { default: 'border-gray-200', win: 'border-green-200', lose: 'border-red-200' }[themeKey];
+
+  return (
+    <div className={`overflow-hidden rounded-lg border ${border} bg-white divide-y divide-gray-100`}>
+
+      {/* Header + preview swatch */}
+      <div className="flex items-center justify-between bg-gray-50 px-4 py-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">{label}</span>
+        <div
+          className="h-4 w-16 rounded"
+          style={{ background: `radial-gradient(circle at center, ${theme.inner} 0%, ${theme.outer} ${theme.falloff}%)` }}
+        />
+      </div>
+
+      <ColorRow label="Inner" value={theme.inner} onChange={v => onChange({ ...theme, inner: v })} />
+      <ColorRow label="Outer" value={theme.outer} onChange={v => onChange({ ...theme, outer: v })} />
+
+      {/* Falloff */}
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-between mb-2">
+          <FieldLabel>Falloff</FieldLabel>
+          <span className="font-mono text-xs text-gray-500">{theme.falloff}%</span>
+        </div>
+        <input
+          type="range" min={10} max={150} step={1}
+          value={theme.falloff}
+          onChange={e => onChange({ ...theme, falloff: Number(e.target.value) })}
+          className="w-full accent-gray-700"
+        />
+        <p className="mt-1 text-xs text-gray-400">100% = full edge. Lower = tighter spotlight.</p>
+      </div>
+
+    </div>
+  );
+}
+
+function RingCard({
+  index,
+  ring,
+  onChange,
+}: {
+  index: number;
+  ring: Ring;
+  onChange: (r: Ring) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function upload(file: File) {
+    if (!file.name.toLowerCase().endsWith('.svg')) {
+      setUploadErr('SVG files only');
+      return;
+    }
+    setUploading(true);
+    setUploadErr('');
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('slot', String(index + 1));
+    const res = await fetch('/api/admin/upload-texture', { method: 'POST', body: fd });
+    if (res.ok) {
+      const { src } = await res.json() as { src: string };
+      onChange({ ...ring, src });
+    } else {
+      setUploadErr('Upload failed');
+    }
+    setUploading(false);
+  }
+
+  const filename = ring.src ? ring.src.split('/').pop() : null;
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+
+      <div className="flex items-center justify-between bg-gray-50 px-5 py-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">Ring {index + 1}</span>
+        {filename && <span className="font-mono text-xs text-gray-400">{filename}</span>}
+      </div>
+
+      {/* Upload */}
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>
+          <FieldLabel>SVG texture</FieldLabel>
+          <p className="text-xs text-gray-400">Saved to <span className="font-mono">public/ring{index + 1}.svg</span></p>
+          {uploadErr && <p className="mt-1 text-xs text-red-500">{uploadErr}</p>}
+        </div>
+        <div className="shrink-0 ml-6">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".svg,image/svg+xml"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ''; }}
+          />
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            {uploading ? 'Uploading…' : ring.src ? 'Replace SVG' : 'Upload SVG'}
+          </button>
+        </div>
+      </div>
+
+      {/* Opacity */}
+      <div className="px-5 py-4">
+        <div className="flex items-center justify-between mb-2">
+          <FieldLabel>Opacity</FieldLabel>
+          <span className="font-mono text-xs text-gray-500">{ring.opacity.toFixed(2)}</span>
+        </div>
+        <input
+          type="range" min={0} max={1} step={0.01}
+          value={ring.opacity}
+          onChange={e => onChange({ ...ring, opacity: Number(e.target.value) })}
+          className="w-full accent-gray-700"
+        />
+      </div>
+
+      {/* Scale */}
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>
+          <FieldLabel>Scale</FieldLabel>
+          <p className="text-xs text-gray-400">Multiplier on the base 120vmax size. 1.0 = fills viewport.</p>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0 ml-6">
+          <input
+            type="number" min={0.1} step={0.05}
+            value={ring.scale}
+            onChange={e => onChange({ ...ring, scale: Number(e.target.value) })}
+            className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
+          <span className="text-xs text-gray-400">×</span>
+        </div>
+      </div>
+
+      {/* Speed */}
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>
+          <FieldLabel>Rotation speed</FieldLabel>
+          <p className="text-xs text-gray-400">Seconds per full rotation — higher is slower.</p>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0 ml-6">
+          <input
+            type="number" min={1} step={5}
+            value={ring.speed}
+            onChange={e => onChange({ ...ring, speed: Number(e.target.value) })}
+            className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
+          <span className="text-xs text-gray-400">s / rev</span>
+        </div>
+      </div>
+
+      {/* Direction */}
+      <div className="flex items-center justify-between px-5 py-4">
+        <FieldLabel>Direction</FieldLabel>
+        <div className="flex overflow-hidden rounded border border-gray-200">
+          {(['cw', 'ccw'] as const).map(dir => (
+            <button
+              key={dir}
+              onClick={() => onChange({ ...ring, direction: dir })}
+              className={`px-4 py-1.5 text-xs font-medium transition-colors ${
+                ring.direction === dir
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              {dir === 'cw' ? '↻ CW' : '↺ CCW'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+function TLEvent({
+  label,
+  sub,
+  trailing,
+}: {
+  label: string;
+  sub?: string;
+  trailing?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3 py-1.5">
+      <div className="relative z-10 mt-[5px] h-3.5 w-3.5 shrink-0 rounded-full border-2 border-gray-700 bg-white" />
+      <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium leading-snug text-gray-800">{label}</p>
+          {sub && <p className="mt-0.5 text-xs text-gray-400">{sub}</p>}
+        </div>
+        {trailing && <div className="shrink-0">{trailing}</div>}
+      </div>
+    </div>
+  );
+}
+
+function TLPause({
+  label,
+  value,
+  maxMs,
+  input,
+  variable,
+  derived,
+  accent = 'indigo',
+}: {
+  label: string;
+  value?: number;
+  maxMs: number;
+  input?: React.ReactNode;
+  variable?: boolean;
+  derived?: boolean;
+  accent?: 'indigo' | 'amber';
+}) {
+  const pct = variable ? 22 : Math.max(2, Math.round(((value ?? 0) / maxMs) * 100));
+  const barColor =
+    variable || derived ? 'bg-gray-300' :
+    accent === 'amber'  ? 'bg-amber-400' : 'bg-indigo-400';
+
+  return (
+    <div className="flex items-stretch gap-3">
+      <div className="flex w-3.5 shrink-0 flex-col items-center">
+        <div className="w-px flex-1 bg-gray-200" />
+      </div>
+      <div className="flex-1 py-2">
+        <div className="mb-1.5 flex items-center justify-between gap-3">
+          <span className="text-xs leading-snug text-gray-500">{label}</span>
+          {input ? (
+            <div className="shrink-0">{input}</div>
+          ) : variable ? (
+            <span className="text-xs italic text-gray-400">variable</span>
+          ) : derived ? (
+            <span className="font-mono text-xs text-gray-400">{value} ms</span>
+          ) : null}
+        </div>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+          <div
+            className={`h-full rounded-full transition-[width] duration-150 ${barColor} ${variable ? 'opacity-40' : ''}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GameTimeline({
+  settings,
+  setSettings,
+}: {
+  settings: Settings;
+  setSettings: Dispatch<SetStateAction<Settings>>;
+}) {
+  const maxMs = Math.max(settings.pauseDiceRoll, 1);
+  const remaining = Math.max(0, settings.pauseDiceRoll - settings.pauseDiceReveal);
+
+  function num(key: keyof Settings, step = 100) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          type="number"
+          min={0}
+          step={step}
+          value={settings[key] as number}
+          onChange={e => setSettings(s => ({ ...s, [key]: Number(e.target.value) }))}
+          className="w-20 rounded border border-gray-200 px-2 py-0.5 text-right font-mono text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+        />
+        <span className="text-xs text-gray-400">ms</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white px-6 py-5">
+      <p className="mb-5 text-xs text-gray-400">
+        Bars are proportional to <span className="font-mono">pauseDiceRoll</span> ({maxMs} ms — the longest fixed interval).
+        Dashed grey segments depend on ElevenLabs speech length.
+      </p>
+      <div className="relative">
+        <div className="absolute bottom-3 left-[6px] top-3 w-px bg-gray-200" />
+
+        <TLEvent label="Page loads" sub="Rive intro scene begins playing immediately" />
+        <TLPause label="Intro plays" maxMs={maxMs} variable />
+
+        <TLEvent label='"Begin Journey" clicked' />
+        <TLPause label="pauseUiFade — start screen fades out" value={settings.pauseUiFade} maxMs={maxMs} input={num('pauseUiFade', 50)} />
+
+        <TLEvent label="Start screen hidden" />
+        <TLPause label="pauseBeforeGreeting — countdown before greeting" value={settings.pauseBeforeGreeting} maxMs={maxMs} input={num('pauseBeforeGreeting')} />
+
+        <TLEvent label="Greeting speech begins" sub="ElevenLabs TTS — variable duration" />
+        <TLPause label="Greeting speech" maxMs={maxMs} variable />
+
+        <TLEvent label="First encounter presented" sub="User picks an option" />
+        <TLPause label="Pre-roll speech" maxMs={maxMs} variable />
+
+        <TLEvent label="Dice roll begins" />
+        <TLPause label="pauseDiceReveal — result revealed + dicewin / dicefail fires" value={settings.pauseDiceReveal} maxMs={maxMs} input={num('pauseDiceReveal')} accent="amber" />
+
+        <TLEvent label="Roll result shown" />
+        <TLPause label={`Remaining animation (pauseDiceRoll − pauseDiceReveal = ${remaining} ms)`} value={remaining} maxMs={maxMs} derived />
+
+        <TLEvent
+          label="Dice animation ends · reaction speech begins"
+          sub="pauseDiceRoll (total dice phase):"
+          trailing={num('pauseDiceRoll')}
+        />
+        <TLPause label="Reaction speech" maxMs={maxMs} variable />
+
+        <TLEvent label="Reaction ends · next encounter or final" sub="pauseBeforeResults applies only after the last encounter" />
+        <TLPause label="pauseBeforeResults — before results screen" value={settings.pauseBeforeResults} maxMs={maxMs} input={num('pauseBeforeResults')} />
+
+        <TLEvent label="Results screen" />
+      </div>
     </div>
   );
 }

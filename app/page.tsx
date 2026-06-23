@@ -1,6 +1,9 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { GameRive } from '@/components/GameRive';
+import { BackgroundRings } from '@/components/BackgroundRings';
+import { BackgroundGradient } from '@/components/BackgroundGradient';
+import type { ThemeKey } from '@/lib/game/settings';
 import { ENCOUNTERS } from '@/lib/game/encounters';
 import { GREETING, PRE_ROLL_LINES, REACTION_LINES } from '@/lib/game/reactionLines';
 import { pickEncounter, resolveRoll, pickReaction, pickLine, stepRange } from '@/lib/game/engine';
@@ -327,9 +330,17 @@ export default function Home() {
       ? (rollResult.success ? 'win' : 'fail')
       : null;
 
+  const gradientTheme: ThemeKey =
+    (phase === 'reacting' || phase === 'results')
+      ? (rollResult?.success ? 'win' : 'lose')
+      : 'default';
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-gray-950 flex flex-col items-center justify-center gap-6 p-8">
+    <>
+    <BackgroundGradient theme={gradientTheme} />
+    <BackgroundRings />
+    <main className="relative z-10 min-h-screen flex flex-col items-center justify-center gap-6 p-8">
 
       {/* Streak bar — hidden on start screen */}
       {phase !== 'start' && (
@@ -460,5 +471,6 @@ export default function Home() {
         </div>
       )}
     </main>
+    </>
   );
 }

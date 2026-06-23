@@ -18,3 +18,7 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes bg-spin {
+  to { transform: rotate(360deg); }
+}

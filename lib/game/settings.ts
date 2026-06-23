@@ -1,6 +1,12 @@
 import data from '@/data/settings.json';
 
+export type Ring         = { src: string; opacity: number; scale: number; speed: number; direction: 'cw' | 'ccw' };
+export type GradientTheme = { inner: string; outer: string; falloff: number };
+export type ThemeKey      = 'default' | 'win' | 'lose';
+
 export const SETTINGS = data as {
+  rings: Ring[];
+  background: { themes: Record<ThemeKey, GradientTheme> };
   rive: {
     artboard:     string;
     stateMachine: string;
@@ -18,4 +24,5 @@ export const SETTINGS = data as {
   pauseDiceRoll:        number;
   pauseBeforeResults:   number;
   pauseUiFade:          number;
+  riveScale:            number;
 };

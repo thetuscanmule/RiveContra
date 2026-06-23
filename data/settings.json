@@ -1,4 +1,39 @@
 {
+  "background": {
+    "themes": {
+      "default": {
+        "inner": "#696969",
+        "outer": "#1F1F1F",
+        "falloff": 101
+      },
+      "win": {
+        "inner": "#0f2e1a",
+        "outer": "#06090a",
+        "falloff": 75
+      },
+      "lose": {
+        "inner": "#2e0f10",
+        "outer": "#0a0606",
+        "falloff": 75
+      }
+    }
+  },
+  "rings": [
+    {
+      "src": "/ring1.svg",
+      "opacity": 0.15,
+      "scale": 1.3,
+      "speed": 120,
+      "direction": "cw"
+    },
+    {
+      "src": "/ring2.svg",
+      "opacity": 0.1,
+      "scale": 2.5,
+      "speed": 240,
+      "direction": "cw"
+    }
+  ],
   "rive": {
     "artboard": "",
     "stateMachine": "Game",
@@ -15,5 +50,6 @@
   "pauseDiceReveal": 5000,
   "pauseDiceRoll": 8000,
   "pauseBeforeResults": 2000,
-  "pauseUiFade": 400
+  "pauseUiFade": 400,
+  "riveScale": 0.9
 }

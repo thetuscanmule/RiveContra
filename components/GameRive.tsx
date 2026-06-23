@@ -46,8 +46,9 @@ export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome }: Props) 
     if (diceOutcome === 'fail' && diceFailInput) diceFailInput.fire();
   }, [diceOutcome, diceWinInput, diceFailInput]);
 
+  const size = Math.round(480 * SETTINGS.riveScale);
   return (
-    <div style={{ width: 480, height: 480 }}>
+    <div style={{ width: size, height: size }}>
       <RiveComponent style={{ width: '100%', height: '100%' }} />
     </div>
   );
