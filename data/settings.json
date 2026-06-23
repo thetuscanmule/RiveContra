@@ -1,4 +1,16 @@
 {
+  "cursor": {
+    "default": {
+      "src": "/cursor.png",
+      "hotspotX": 0,
+      "hotspotY": 0
+    },
+    "hover": {
+      "src": "/cursor-hover.png",
+      "hotspotX": 0,
+      "hotspotY": 0
+    }
+  },
   "background": {
     "themes": {
       "default": {

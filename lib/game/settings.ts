@@ -1,11 +1,14 @@
 import data from '@/data/settings.json';
 
 export type Ring         = { src: string; opacity: number; scale: number; speed: number; direction: 'cw' | 'ccw' };
+export type CursorSlot   = { src: string; hotspotX: number; hotspotY: number };
+export type CursorConfig = { default: CursorSlot; hover: CursorSlot };
 export type GradientTheme = { inner: string; outer: string; falloff: number };
 export type ThemeKey      = 'default' | 'win' | 'lose';
 
 export const SETTINGS = data as {
-  rings: Ring[];
+  cursor:     CursorConfig;
+  rings:      Ring[];
   background: { themes: Record<ThemeKey, GradientTheme> };
   rive: {
     artboard:     string;

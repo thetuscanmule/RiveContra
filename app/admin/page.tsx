@@ -1,7 +1,7 @@
 'use client';
 
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { GradientTheme, Ring, ThemeKey } from '@/lib/game/settings';
+import { CursorConfig, CursorSlot, GradientTheme, Ring, ThemeKey } from '@/lib/game/settings';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -9,14 +9,14 @@ type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; riveScale: number };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; riveScale: number };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, riveScale: 1.0 });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, riveScale: 1.0 });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -207,6 +207,21 @@ export default function AdminPage() {
                   ...s,
                   rings: s.rings.map((r, idx) => idx === i ? updated : r),
                 }))}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* ── Cursor ── */}
+        <section>
+          <SectionHeading title="Cursor" />
+          <div className="space-y-4">
+            {(['default', 'hover'] as const).map(slot => (
+              <CursorSlotCard
+                key={slot}
+                slot={slot}
+                cursor={settings.cursor[slot]}
+                onChange={updated => setSettings(s => ({ ...s, cursor: { ...s.cursor, [slot]: updated } }))}
               />
             ))}
           </div>
@@ -630,6 +645,105 @@ function RiveInputRow({
         spellCheck={false}
         className="w-48 shrink-0 rounded border border-gray-200 px-3 py-1.5 font-mono text-sm text-gray-800 focus:border-gray-400 focus:outline-none"
       />
+    </div>
+  );
+}
+
+function CursorSlotCard({
+  slot,
+  cursor,
+  onChange,
+}: {
+  slot: 'default' | 'hover';
+  cursor: CursorSlot;
+  onChange: (c: CursorSlot) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function upload(file: File) {
+    setUploading(true);
+    setUploadErr('');
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('slot', slot);
+    const res = await fetch('/api/admin/upload-cursor', { method: 'POST', body: fd });
+    if (res.ok) {
+      const { src } = await res.json() as { src: string };
+      onChange({ ...cursor, src });
+    } else {
+      const body = await res.json().catch(() => ({})) as { error?: string };
+      setUploadErr(body.error ?? 'Upload failed');
+    }
+    setUploading(false);
+  }
+
+  const label    = slot === 'default' ? 'Default cursor' : 'Hover cursor';
+  const hint     = slot === 'default' ? 'Shown everywhere.' : 'Shown over buttons, links, and interactive elements.';
+  const filename = cursor.src ? cursor.src.split('/').pop() : null;
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+
+      <div className="flex items-center justify-between bg-gray-50 px-5 py-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">{label}</span>
+        {filename && <span className="font-mono text-xs text-gray-400">{filename}</span>}
+      </div>
+
+      {/* Upload */}
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>
+          <FieldLabel>Image</FieldLabel>
+          <p className="text-xs text-gray-400">{hint} PNG, SVG, WebP or CUR.</p>
+          {uploadErr && <p className="mt-1 text-xs text-red-500">{uploadErr}</p>}
+        </div>
+        <div className="shrink-0 ml-6">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".svg,.png,.webp,.cur,image/svg+xml,image/png,image/webp"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ''; }}
+          />
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            {uploading ? 'Uploading…' : cursor.src ? 'Replace' : 'Upload'}
+          </button>
+        </div>
+      </div>
+
+      {/* Hotspot */}
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>
+          <FieldLabel>Hotspot</FieldLabel>
+          <p className="text-xs text-gray-400">Active click point in pixels.</p>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 ml-6">
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-gray-400">X</span>
+            <input
+              type="number" min={0} step={1}
+              value={cursor.hotspotX}
+              onChange={e => onChange({ ...cursor, hotspotX: Number(e.target.value) })}
+              className="w-16 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+            />
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-gray-400">Y</span>
+            <input
+              type="number" min={0} step={1}
+              value={cursor.hotspotY}
+              onChange={e => onChange({ ...cursor, hotspotY: Number(e.target.value) })}
+              className="w-16 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
