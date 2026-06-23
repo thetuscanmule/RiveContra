@@ -19,13 +19,13 @@
         "falloff": 101
       },
       "win": {
-        "inner": "#0f2e1a",
-        "outer": "#06090a",
+        "inner": "#35bb64",
+        "outer": "#116b0f",
         "falloff": 75
       },
       "lose": {
-        "inner": "#2e0f10",
-        "outer": "#0a0606",
+        "inner": "#d2282e",
+        "outer": "#a13a3a",
         "falloff": 75
       }
     }
@@ -58,8 +58,8 @@
   },
   "smoothing": 0.95,
   "speechSpeed": 0.7,
-  "pauseBeforeGreeting": 2000,
-  "pauseDiceReveal": 5000,
+  "pauseBeforeGreeting": 4000,
+  "pauseDiceReveal": 3000,
   "pauseDiceRoll": 8000,
   "pauseBeforeResults": 2000,
   "pauseUiFade": 400,

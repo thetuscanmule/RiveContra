@@ -379,7 +379,7 @@ export default function Home() {
       : null;
 
   const gradientTheme: ThemeKey =
-    ((phase === 'resolving' && diceRevealed) || phase === 'reacting' || phase === 'results')
+    ((phase === 'resolving' && diceRevealed) || phase === 'results')
       ? (rollResult?.success ? 'win' : 'lose')
       : 'default';
 
@@ -434,26 +434,6 @@ export default function Home() {
         )}
 
         {/* Dice result overlay — hidden until pauseDiceReveal elapses */}
-        {phase === 'resolving' && diceRevealed && rollResult && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center
-                          bg-gray-950/70 rounded-xl gap-3">
-            <p className="text-6xl font-black text-white">{rollResult.roll}</p>
-            <p className="text-sm text-gray-300">
-              Needed {rollResult.threshold} or above
-            </p>
-            <p className={`text-xl font-bold tracking-widest ${
-              rollResult.success ? 'text-green-400' : 'text-red-400'
-            }`}>
-              {rollResult.success ? '✓ SUCCESS' : '✗ FAILURE'}
-            </p>
-            {rollResult.success && (
-              <p className="text-green-300 text-sm font-mono">
-                +{rollResult.steps} steps forward
-              </p>
-            )}
-          </div>
-        )}
-
         {/* Results overlay */}
         {phase === 'results' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center
@@ -474,6 +454,7 @@ export default function Home() {
             </button>
           </div>
         )}
+
 
         {/* Jaw debug */}
         <span className="absolute bottom-2 right-3 font-mono text-xs
