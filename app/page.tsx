@@ -103,6 +103,9 @@ export default function Home() {
   const usedIdsRef      = useRef<Set<string>>(new Set());
   // Track last pre-roll line to avoid immediate repeats
   const lastPreRollRef  = useRef('');
+  // Phase audio
+  const phaseAudioRef   = useRef<AudioBufferSourceNode | null>(null);
+  const audioCacheRef   = useRef(new Map<string, AudioBuffer>());
 
   // Keep refs in sync
   useEffect(() => { rollResultRef.current = rollResult; }, [rollResult]);
@@ -285,6 +288,50 @@ export default function Home() {
     return () => { active = false; stopSpeech(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, reactionLine]);
+
+  // phase audio: play clip assigned to each phase, stop when phase changes
+  useEffect(() => {
+    const clip = SETTINGS.audio.phases[phase];
+    if (!clip?.src) {
+      try { phaseAudioRef.current?.stop(); } catch { /* already ended */ }
+      phaseAudioRef.current = null;
+      return;
+    }
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
+
+    let active = true;
+    (async () => {
+      try { phaseAudioRef.current?.stop(); } catch { /* already ended */ }
+      phaseAudioRef.current = null;
+
+      let buf = audioCacheRef.current.get(clip.src);
+      if (!buf) {
+        const ab = await (await fetch(clip.src)).arrayBuffer();
+        buf = await ctx.decodeAudioData(ab);
+        audioCacheRef.current.set(clip.src, buf);
+      }
+      if (!active) return;
+
+      const node = ctx.createBufferSource();
+      node.buffer = buf;
+      node.loop   = clip.loop;
+      const gain  = ctx.createGain();
+      gain.gain.value = clip.volume;
+      node.connect(gain);
+      gain.connect(ctx.destination);
+      node.start();
+      phaseAudioRef.current = node;
+      if (!clip.loop) node.onended = () => { if (phaseAudioRef.current === node) phaseAudioRef.current = null; };
+    })().catch(console.error);
+
+    return () => {
+      active = false;
+      try { phaseAudioRef.current?.stop(); } catch { /* already ended */ }
+      phaseAudioRef.current = null;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   // ── Event handlers ─────────────────────────────────────────────────────────
 

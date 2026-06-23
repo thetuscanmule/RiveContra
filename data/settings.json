@@ -63,5 +63,44 @@
   "pauseDiceRoll": 8000,
   "pauseBeforeResults": 2000,
   "pauseUiFade": 400,
-  "riveScale": 0.9
+  "riveScale": 0.9,
+  "audio": {
+    "phases": {
+      "start": {
+        "src": "",
+        "volume": 1,
+        "loop": true
+      },
+      "greeting": {
+        "src": "/audio/greeting.mp3",
+        "volume": 0.08,
+        "loop": false
+      },
+      "presenting": {
+        "src": "",
+        "volume": 1,
+        "loop": true
+      },
+      "pre-rolling": {
+        "src": "/audio/pre-rolling.mp3",
+        "volume": 0.08,
+        "loop": true
+      },
+      "resolving": {
+        "src": "",
+        "volume": 1,
+        "loop": true
+      },
+      "reacting": {
+        "src": "",
+        "volume": 1,
+        "loop": false
+      },
+      "results": {
+        "src": "",
+        "volume": 1,
+        "loop": true
+      }
+    }
+  }
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { CursorConfig, CursorSlot, GradientTheme, Ring, ThemeKey } from '@/lib/game/settings';
+import { AudioClip, CursorConfig, CursorSlot, GradientTheme, Ring, ThemeKey } from '@/lib/game/settings';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -9,14 +9,14 @@ type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; riveScale: number };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; riveScale: number; audio: { phases: Record<string, AudioClip> } };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, riveScale: 1.0 });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, riveScale: 1.0, audio: { phases: {} } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -439,6 +439,24 @@ export default function AdminPage() {
         <section>
           <SectionHeading title="Game Timeline" />
           <GameTimeline settings={settings} setSettings={setSettings} />
+        </section>
+
+        {/* ── Audio ── */}
+        <section>
+          <SectionHeading title="Audio" />
+          <p className="mb-3 text-xs text-gray-400">One clip per game phase — plays on phase enter, stops on phase change.</p>
+          <div className="space-y-3">
+            {AUDIO_PHASES.map(({ key, label, note }) => (
+              <AudioPhaseCard
+                key={key}
+                phaseKey={key}
+                label={label}
+                note={note}
+                clip={settings.audio.phases[key] ?? { src: '', volume: 1.0, loop: true }}
+                onChange={clip => setSettings(s => ({ ...s, audio: { phases: { ...s.audio.phases, [key]: clip } } }))}
+              />
+            ))}
+          </div>
         </section>
 
         {/* ── Greeting ── */}
@@ -1129,5 +1147,128 @@ function AutoResizeTextarea({
       placeholder={placeholder}
       className={`w-full resize-none overflow-hidden rounded border px-3 py-2 text-sm leading-relaxed text-gray-800 focus:outline-none ${borderClass}`}
     />
+  );
+}
+
+// ── Audio ──────────────────────────────────────────────────────────────────
+
+const AUDIO_PHASES = [
+  { key: 'start',       label: 'Page loads',          note: 'Intro scene — plays after reload (requires AudioContext)' },
+  { key: 'greeting',    label: 'Greeting speech',      note: 'After "Begin Journey" + pauseBeforeGreeting' },
+  { key: 'presenting',  label: 'Encounter presented',  note: 'While player reads and picks an option' },
+  { key: 'pre-rolling', label: 'Pre-roll speech',      note: 'Before dice animation starts' },
+  { key: 'resolving',   label: 'Dice roll',            note: 'pauseDiceReveal → pauseDiceRoll' },
+  { key: 'reacting',    label: 'Reaction',             note: 'Win or lose reaction speech' },
+  { key: 'results',     label: 'Results screen',       note: 'End of run — after pauseBeforeResults' },
+] as const;
+
+function AudioPhaseCard({
+  phaseKey,
+  label,
+  note,
+  clip,
+  onChange,
+}: {
+  phaseKey: string;
+  label: string;
+  note: string;
+  clip: AudioClip;
+  onChange: (c: AudioClip) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function upload(file: File) {
+    setUploading(true);
+    setUploadErr('');
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('phase', phaseKey);
+    const res = await fetch('/api/admin/upload-audio', { method: 'POST', body: fd });
+    if (res.ok) {
+      const { src } = await res.json() as { src: string };
+      onChange({ ...clip, src });
+    } else {
+      const body = await res.json().catch(() => ({})) as { error?: string };
+      setUploadErr(body.error ?? 'Upload failed');
+    }
+    setUploading(false);
+  }
+
+  const filename = clip.src ? clip.src.split('/').pop() : null;
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+
+      {/* Header */}
+      <div className="flex items-center justify-between bg-gray-50 px-5 py-3">
+        <div>
+          <span className="text-sm font-medium text-gray-800">{label}</span>
+          <span className="ml-2 font-mono text-xs text-gray-400">{phaseKey}</span>
+        </div>
+        {filename && <span className="font-mono text-xs text-gray-400">{filename}</span>}
+      </div>
+
+      {/* Note */}
+      <div className="border-t border-gray-100 px-5 py-2">
+        <p className="text-xs text-gray-400">{note}</p>
+      </div>
+
+      {/* Controls */}
+      <div className="flex flex-wrap items-center gap-4 border-t border-gray-100 px-5 py-4">
+
+        {/* Upload */}
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".mp3,.ogg,.wav,.webm,.m4a,audio/*"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ''; }}
+          />
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            {uploading ? 'Uploading…' : clip.src ? 'Replace' : 'Upload'}
+          </button>
+          {clip.src && (
+            <button
+              onClick={() => onChange({ ...clip, src: '' })}
+              className="rounded border border-red-100 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 active:bg-red-100 transition-colors"
+            >
+              Remove
+            </button>
+          )}
+          {uploadErr && <span className="text-xs text-red-500">{uploadErr}</span>}
+        </div>
+
+        {/* Volume */}
+        <div className="flex items-center gap-2">
+          <FieldLabel>Volume</FieldLabel>
+          <input
+            type="range" min={0} max={1} step={0.01}
+            value={clip.volume}
+            onChange={e => onChange({ ...clip, volume: Number(e.target.value) })}
+            className="w-24 accent-gray-700"
+          />
+          <span className="w-8 text-right font-mono text-xs text-gray-500">{clip.volume.toFixed(2)}</span>
+        </div>
+
+        {/* Loop */}
+        <label className="flex cursor-pointer items-center gap-2 select-none">
+          <input
+            type="checkbox"
+            checked={clip.loop}
+            onChange={e => onChange({ ...clip, loop: e.target.checked })}
+            className="h-3.5 w-3.5 rounded border-gray-300 accent-gray-700"
+          />
+          <span className="text-xs text-gray-700">Loop</span>
+        </label>
+
+      </div>
+    </div>
   );
 }
