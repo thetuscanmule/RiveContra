@@ -379,7 +379,7 @@ export default function Home() {
       : null;
 
   const gradientTheme: ThemeKey =
-    (phase === 'reacting' || phase === 'results')
+    ((phase === 'resolving' && diceRevealed) || phase === 'reacting' || phase === 'results')
       ? (rollResult?.success ? 'win' : 'lose')
       : 'default';
 
