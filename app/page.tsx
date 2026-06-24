@@ -5,6 +5,7 @@ import { BackgroundRings } from '@/components/BackgroundRings';
 import { BackgroundGradient } from '@/components/BackgroundGradient';
 import { BackgroundTexture } from '@/components/BackgroundTexture';
 import { CustomCursor } from '@/components/CustomCursor';
+import { HexButton } from '@/components/HexButton';
 import type { ThemeKey } from '@/lib/game/settings';
 import { ENCOUNTERS } from '@/lib/game/encounters';
 import { GREETING, PRE_ROLL_LINES, REACTION_LINES } from '@/lib/game/reactionLines';
@@ -385,7 +386,7 @@ export default function Home() {
     {/* Leaderboard — top-right, fixed */}
     <a
       href="#"
-      className="fixed top-6 right-8 z-20 font-body text-sm text-white/60 transition-colors duration-150 hover:text-[#d4ff3e]"
+      className="fixed top-6 right-8 z-20 font-body text-sm text-white/60 transition-colors duration-150 hover:text-accent"
     >
       Leaderboard
     </a>
@@ -425,14 +426,7 @@ export default function Home() {
             }}
           >
             <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-72 -mb-2" />
-            <button
-              onClick={handleStart}
-              className="group btn-hex p-px bg-white/30 [filter:drop-shadow(0_0_1px_rgba(255,255,255,0.2))_drop-shadow(0_4px_14px_rgba(0,0,0,0.7))] hover:[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.2))_drop-shadow(0_4px_14px_rgba(0,0,0,0.7))] active:scale-[0.97] active:[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.15))_drop-shadow(0_2px_8px_rgba(0,0,0,0.8))] transition-transform duration-100"
-            >
-              <span className="btn-hex block px-16 py-[13px] font-body text-lg font-semibold tracking-widest text-white bg-[#141414] transition-colors duration-150 group-hover:bg-[#d4ff3e] group-hover:font-bold group-hover:text-black group-active:bg-white group-active:font-bold group-active:text-black">
-                Enter
-              </span>
-            </button>
+            <HexButton onClick={handleStart}>Enter</HexButton>
           </div>
         )}
 

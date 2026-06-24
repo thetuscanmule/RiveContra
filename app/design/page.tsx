@@ -1,3 +1,5 @@
+import { HexButton } from '@/components/HexButton';
+
 export default function DesignSystem() {
   return (
     <div className="min-h-screen bg-[#111111] px-12 py-16 font-body">
@@ -57,34 +59,19 @@ export default function DesignSystem() {
 
           {/* Live interactive button */}
           <ButtonSwatch label="Default — interactive">
-            <button className={[
-              'group btn-hex p-px bg-white/30',
-              '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.2))_drop-shadow(0_4px_14px_rgba(0,0,0,0.7))]',
-              'hover:[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.2))_drop-shadow(0_4px_14px_rgba(0,0,0,0.7))]',
-              'active:scale-[0.97] active:[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.15))_drop-shadow(0_2px_8px_rgba(0,0,0,0.8))]',
-              'transition-transform duration-100 disabled:cursor-not-allowed',
-            ].join(' ')}>
-              <span className={[
-                'btn-hex block px-16 py-[13px] font-body text-lg tracking-widest transition-colors duration-150',
-                'bg-[#141414] font-semibold text-white',
-                'group-hover:bg-[#d4ff3e] group-hover:font-bold group-hover:text-black',
-                'group-active:bg-white group-active:font-bold group-active:text-black',
-              ].join(' ')}>
-                Enter
-              </span>
-            </button>
+            <HexButton>Enter</HexButton>
           </ButtonSwatch>
 
           {/* Frozen states */}
           <div className="flex flex-wrap items-end gap-8">
 
             <ButtonSwatch label="Default">
-              <HexBtn fill="#141414" textClass="font-semibold text-white"
+              <HexBtn fill="#141414" textClass="font-semibold text-white" /* bg-btn */
                 filter="drop-shadow(0 0 1px rgba(255,255,255,0.2)) drop-shadow(0 4px 14px rgba(0,0,0,0.7))" />
             </ButtonSwatch>
 
             <ButtonSwatch label="Hovered">
-              <HexBtn fill="#d4ff3e" textClass="font-bold text-black"
+              <HexBtn fill="#d4ff3e" textClass="font-bold text-black" /* bg-accent */
                 filter="drop-shadow(0 0 1px rgba(255,255,255,0.2)) drop-shadow(0 4px 14px rgba(0,0,0,0.7))" />
             </ButtonSwatch>
 

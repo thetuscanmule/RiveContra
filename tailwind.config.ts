@@ -11,6 +11,8 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        accent: "#d4ff3e",
+        btn:    "#141414",
       },
       fontFamily: {
         display: ['var(--font-display)'],
