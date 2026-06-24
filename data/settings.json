@@ -64,6 +64,11 @@
   "pauseBeforeResults": 2000,
   "pauseUiFade": 400,
   "riveScale": 0.9,
+  "texture": {
+    "src": "/bg-texture.svg",
+    "size": 300,
+    "opacity": 0.3
+  },
   "audio": {
     "phases": {
       "start": {

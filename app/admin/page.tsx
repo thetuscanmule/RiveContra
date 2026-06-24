@@ -1,7 +1,7 @@
 'use client';
 
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { AudioClip, CursorConfig, CursorSlot, GradientTheme, Ring, ThemeKey } from '@/lib/game/settings';
+import { AudioClip, CursorConfig, CursorSlot, GradientTheme, Ring, TextureConfig, ThemeKey } from '@/lib/game/settings';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -9,14 +9,14 @@ type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; riveScale: number; audio: { phases: Record<string, AudioClip> } };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; riveScale: number; audio: { phases: Record<string, AudioClip> } };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, riveScale: 1.0, audio: { phases: {} } });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, riveScale: 1.0, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {} } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -197,7 +197,7 @@ export default function AdminPage() {
           <p className="mb-3 text-xs text-gray-400">
             Two concentric ring layers rendered behind the game. Upload an SVG texture for each. Changes take effect after saving and reloading.
           </p>
-          <div className="space-y-4">
+          <div className="mb-8 space-y-4">
             {settings.rings.map((ring, i) => (
               <RingCard
                 key={i}
@@ -210,6 +210,15 @@ export default function AdminPage() {
               />
             ))}
           </div>
+
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Texture overlay</h3>
+          <p className="mb-3 text-xs text-gray-400">
+            Tileable SVG grain or noise layer rendered above the gradient and rings.
+          </p>
+          <TextureCard
+            texture={settings.texture}
+            onChange={updated => setSettings(s => ({ ...s, texture: updated }))}
+          />
         </section>
 
         {/* ── Cursor ── */}
@@ -1115,6 +1124,94 @@ function GameTimeline({
 
         <TLEvent label="Results screen" />
       </div>
+    </div>
+  );
+}
+
+function TextureCard({ texture, onChange }: { texture: TextureConfig; onChange: (t: TextureConfig) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function upload(file: File) {
+    setUploading(true);
+    setUploadErr('');
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/admin/upload-bg-texture', { method: 'POST', body: fd });
+    if (res.ok) {
+      const { src } = await res.json() as { src: string };
+      onChange({ ...texture, src });
+    } else {
+      const body = await res.json().catch(() => ({})) as { error?: string };
+      setUploadErr(body.error ?? 'Upload failed');
+    }
+    setUploading(false);
+  }
+
+  const filename = texture.src ? texture.src.split('/').pop() : null;
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+
+      {/* Upload */}
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>
+          <FieldLabel>SVG texture</FieldLabel>
+          <p className="text-xs text-gray-400">Tileable SVG. Saved to <span className="font-mono">public/bg-texture.svg</span></p>
+          {filename && <p className="mt-0.5 font-mono text-xs text-gray-500">{filename}</p>}
+          {uploadErr && <p className="mt-1 text-xs text-red-500">{uploadErr}</p>}
+        </div>
+        <div className="flex items-center gap-2 shrink-0 ml-6">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".svg,image/svg+xml"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ''; }}
+          />
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            {uploading ? 'Uploading…' : texture.src ? 'Replace' : 'Upload'}
+          </button>
+          {texture.src && (
+            <button
+              onClick={() => onChange({ ...texture, src: '' })}
+              className="rounded border border-red-100 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 active:bg-red-100 transition-colors"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Tile size + opacity */}
+      <div className="flex flex-wrap items-center gap-6 px-5 py-4">
+        <div className="flex items-center gap-2">
+          <FieldLabel>Tile size</FieldLabel>
+          <input
+            type="number" min={1} step={1}
+            value={texture.size}
+            onChange={e => onChange({ ...texture, size: Number(e.target.value) })}
+            className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
+          <span className="text-xs text-gray-400">px</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <FieldLabel>Opacity</FieldLabel>
+          <input
+            type="range" min={0} max={1} step={0.01}
+            value={texture.opacity}
+            onChange={e => onChange({ ...texture, opacity: Number(e.target.value) })}
+            className="w-24 accent-gray-700"
+          />
+          <span className="w-8 text-right font-mono text-xs text-gray-500">{texture.opacity.toFixed(2)}</span>
+        </div>
+      </div>
+
     </div>
   );
 }

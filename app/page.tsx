@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { GameRive } from '@/components/GameRive';
 import { BackgroundRings } from '@/components/BackgroundRings';
 import { BackgroundGradient } from '@/components/BackgroundGradient';
+import { BackgroundTexture } from '@/components/BackgroundTexture';
 import { CustomCursor } from '@/components/CustomCursor';
 import type { ThemeKey } from '@/lib/game/settings';
 import { ENCOUNTERS } from '@/lib/game/encounters';
@@ -388,6 +389,7 @@ export default function Home() {
     <>
     <CustomCursor />
     <BackgroundGradient theme={gradientTheme} />
+    <BackgroundTexture />
     <BackgroundRings />
     <main className="relative z-10 min-h-screen flex flex-col items-center justify-center gap-6 p-8">
 
