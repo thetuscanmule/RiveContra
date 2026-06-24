@@ -381,6 +381,21 @@ export default function Home() {
     <BackgroundGradient theme={gradientTheme} />
     <BackgroundTexture />
     <BackgroundRings />
+
+    {/* Leaderboard — top-right, fixed */}
+    <a
+      href="#"
+      className="fixed top-6 right-8 z-20 font-body text-sm text-white/60 transition-colors duration-150 hover:text-[#d4ff3e]"
+    >
+      Leaderboard
+    </a>
+
+    {/* RiveXContra logo — bottom-center, fixed */}
+    <img
+      src="/RiveXContra.svg"
+      alt="Rive × Contra"
+      className="fixed bottom-6 left-1/2 z-20 h-6 -translate-x-1/2 opacity-60 transition-opacity duration-150 hover:opacity-100"
+    />
     <main className="relative z-10 min-h-screen flex flex-col items-center justify-center gap-6 p-8">
 
       {/* Streak bar — hidden on start screen */}
@@ -402,25 +417,21 @@ export default function Home() {
         {/* ── Start overlay — hidden on replay (showStartButton=false) ── */}
         {phase === 'start' && showStartButton && (
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-8 text-center"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-0 text-center"
             style={{
               opacity:       isStartFading ? 0 : 1,
               transition:    `opacity ${SETTINGS.pauseUiFade}ms ease-out`,
               pointerEvents: isStartFading ? 'none' : 'auto',
             }}
           >
-            <h1 className="text-4xl font-bold tracking-widest text-green-400 uppercase">
-              Dice Quest
-            </h1>
-            <p className="text-gray-400 max-w-sm text-sm">
-              A dice-driven survival game. How long can your streak hold?
-            </p>
+            <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-72 -mb-2" />
             <button
               onClick={handleStart}
-              className="rounded-xl bg-green-700 px-10 py-4 text-lg font-bold text-white
-                         hover:bg-green-600 transition-colors tracking-wide"
+              className="group btn-hex p-px bg-white/30 [filter:drop-shadow(0_0_1px_rgba(255,255,255,0.2))_drop-shadow(0_4px_14px_rgba(0,0,0,0.7))] hover:[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.2))_drop-shadow(0_4px_14px_rgba(0,0,0,0.7))] active:scale-[0.97] active:[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.15))_drop-shadow(0_2px_8px_rgba(0,0,0,0.8))] transition-transform duration-100"
             >
-              Begin your journey
+              <span className="btn-hex block px-16 py-[13px] font-body text-lg font-semibold tracking-widest text-white bg-[#141414] transition-colors duration-150 group-hover:bg-[#d4ff3e] group-hover:font-bold group-hover:text-black group-active:bg-white group-active:font-bold group-active:text-black">
+                Enter
+              </span>
             </button>
           </div>
         )}

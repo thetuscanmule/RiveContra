@@ -66,7 +66,7 @@ export default function DesignSystem() {
             ].join(' ')}>
               <span className={[
                 'btn-hex block px-16 py-[13px] font-body text-lg tracking-widest transition-colors duration-150',
-                'bg-[#1e1e1e] font-semibold text-white',
+                'bg-[#141414] font-semibold text-white',
                 'group-hover:bg-[#d4ff3e] group-hover:font-bold group-hover:text-black',
                 'group-active:bg-white group-active:font-bold group-active:text-black',
               ].join(' ')}>
@@ -79,7 +79,7 @@ export default function DesignSystem() {
           <div className="flex flex-wrap items-end gap-8">
 
             <ButtonSwatch label="Default">
-              <HexBtn fill="#1e1e1e" textClass="font-semibold text-white"
+              <HexBtn fill="#141414" textClass="font-semibold text-white"
                 filter="drop-shadow(0 0 1px rgba(255,255,255,0.2)) drop-shadow(0 4px 14px rgba(0,0,0,0.7))" />
             </ButtonSwatch>
 

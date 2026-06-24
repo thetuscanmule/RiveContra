@@ -14,8 +14,8 @@
   "background": {
     "themes": {
       "default": {
-        "inner": "#292929",
-        "outer": "#0d0d0d",
+        "inner": "#212121",
+        "outer": "#080808",
         "falloff": 90
       },
       "win": {
