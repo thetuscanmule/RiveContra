@@ -1,0 +1,296 @@
+/* YouWorkForThem — WebFont Example v18 */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background-color: #fafafa;
+    padding: 40px 20px;
+    margin: 0;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    color: #1d1d1f;
+    -webkit-font-smoothing: antialiased;
+}
+
+#wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #1d1d1f;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.inner { background: #fff; }
+
+/* Header bar */
+.header {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 30px;
+}
+
+.header img { display: block; margin-left: -15px; }
+
+.header .brand {
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+#content { width: 100%; line-height: 1.5; }
+
+a { color: #1d1d1f; text-decoration: none; }
+a:hover { color: #0071e3; }
+
+p { padding: 0 30px; }
+
+h1 {
+    padding: 0 30px 20px;
+    margin-top: 35px;
+    font-size: 32px;
+    line-height: 1.1;
+    font-weight: normal;
+    font-style: normal;
+    letter-spacing: -0.01em;
+}
+
+.clear { clear: both; }
+
+/* Text block specimens */
+#textBlock {
+    width: 100%;
+    border-bottom: 1px solid #e8e8ed;
+    padding: 40px 0;
+}
+
+#textBlock .textBlockA,
+#textBlock .textBlockB {
+    overflow: hidden;
+    position: relative;
+    width: 50%;
+    float: left;
+}
+
+#content .fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    padding: 40px 0;
+    background: linear-gradient(rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+}
+
+#content .altcolor .fade {
+    background: linear-gradient(rgba(248,248,248,0) 0%, rgba(248,248,248,1) 100%);
+}
+
+#content .altcolor { background-color: #f8f8f8; }
+
+/* Size classes */
+#content .s64 { font-size: 64px; line-height: 1.5em; }
+#content .s32 { font-size: 32px; line-height: 1.5em; }
+#content .s24 { font-size: 24px; line-height: 1.5em; }
+#content .s22 { font-size: 22px; line-height: 1.5em; }
+#content .s18 { font-size: 18px; line-height: 1.5em; }
+#content .s16 { font-size: 16px; line-height: 1.5em; }
+#content .s12 { font-size: 12px; line-height: 1.5em; }
+#content .s11 { font-size: 11px; line-height: 1.5em; }
+
+.size {
+    font-size: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    color: #86868b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* Glyph charts */
+#content .glyphs {
+    width: 100%;
+    border-bottom: 1px solid #e8e8ed;
+    padding: 40px 0;
+    font-size: 48px;
+    line-height: 1.5em;
+    background: #fff;
+    color: #1d1d1f;
+}
+
+#content .glyphs-alt {
+    background: #1d1d1f !important;
+    color: #fff !important;
+}
+
+/* ----------------------------------------------------------------
+   Getting Started / Help Section
+   ---------------------------------------------------------------- */
+
+#help {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #1d1d1f;
+    padding: 60px 40px 0;
+    background: #fff;
+}
+
+#help h2 {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+}
+
+#help .helpIntro {
+    color: #86868b;
+    font-size: 15px;
+    margin: 0 0 48px;
+    padding: 0;
+}
+
+/* Steps */
+.step {
+    margin: 0 -40px;
+    padding: 30px 40px;
+}
+
+.step-1 { background: #fff; padding-top: 0; }
+.step-2 { background: #f9f9fb; padding-top: 50px; padding-bottom: 50px; }
+.step-3 { background: #f3f3f5; padding-top: 50px; padding-bottom: 50px; }
+
+.step-label {
+    color: #86868b;
+}
+
+.step h3 {
+    font-size: 19px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    line-height: 1.3;
+    color: #1d1d1f;
+}
+
+.step p {
+    padding: 0;
+    margin: 0 0 10px;
+    color: #424245;
+}
+
+.step ul {
+    list-style: none;
+    margin: 14px 0;
+    padding: 12px 16px;
+    background: #f0f0f2;
+    border-radius: 8px;
+}
+
+.step ul li {
+    padding: 6px 0;
+    color: #424245;
+    font-size: 14px;
+}
+
+.step ul li code {
+    background: #e8e8ed;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+}
+
+.step ul li strong {
+    color: #1d1d1f;
+}
+
+.code-block {
+    background: #1d1d1f;
+    border-radius: 10px;
+    padding: 16px 24px;
+    margin: 14px 0;
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    color: #FFE800;
+    text-align: left;
+    word-break: break-all;
+    word-wrap: break-word;
+    line-height: 1.6;
+}
+
+.step code {
+    background: #e8e8ed;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: #1d1d1f;
+}
+
+/* Troubleshooting */
+.troubleshooting {
+    background: #1d1d1f;
+    padding: 50px 40px 60px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.troubleshooting h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #fff;
+}
+
+.troubleshooting-item {
+    margin-bottom: 20px;
+    color: #a1a1a6;
+}
+
+.troubleshooting-item strong {
+    color: #fff;
+}
+
+/* ----------------------------------------------------------------
+   Footer
+   ---------------------------------------------------------------- */
+
+#footer {
+    text-align: center;
+    width: 100%;
+    font-size: 14px;
+    color: #86868b;
+    margin: 0;
+    padding: 30px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+#footer p { margin-bottom: 4px; }
+#footer a { color: #1d1d1f; font-weight: 700; text-decoration: none; }
+#footer a:hover { color: #1d1d1f; text-decoration: underline; }
+
+/* ----------------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    body { padding: 0; }
+    #wrapper { border-radius: 0; box-shadow: none; }
+    #content .glyphs { font-size: 24px !important; }
+    #textBlock .textBlockA,
+    #textBlock .textBlockB { width: 100%; float: none; }
+    #textBlock .textBlockA { margin-bottom: 30px; }
+    #help { padding: 40px 24px 0; }
+    .troubleshooting { padding: 40px 24px 50px; }
+    .step { margin: 0 -24px; padding-left: 24px; padding-right: 24px; }
+    .step { gap: 14px; }
+}

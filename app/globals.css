@@ -2,15 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'EDSmither-Regular';
+  src: url('/fonts/ed-smither-regular-webfont-full/webfonts/ed-smither-regular.woff2') format('woff2'),
+       url('/fonts/ed-smither-regular-webfont-full/webfonts/ed-smither-regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #030712; /* gray-950 */
   --foreground: #f9fafb;
+  --font-display: 'EDSmither-Regular', serif;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), serif;
 }
 
 @layer utilities {
@@ -21,4 +31,12 @@ body {
 
 @keyframes bg-spin {
   to { transform: rotate(360deg); }
+}
+
+@layer components {
+  /* Outer element: provides clip-path, inner stroke (1px padding + white/30 bg), and drop-shadow */
+  .btn-hex {
+    clip-path: polygon(22px 0%, calc(100% - 22px) 0%, 100% 50%, calc(100% - 22px) 100%, 22px 100%, 0% 50%);
+    transition: filter 0.15s ease, transform 0.1s ease;
+  }
 }
