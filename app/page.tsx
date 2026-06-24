@@ -237,33 +237,23 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, encounter?.id]);
 
-  // pre-rolling: speak a pre-roll line, then hand off to resolving (dice anim)
-  useEffect(() => {
-    if (phase !== 'pre-rolling') return;
-    let active = true;
-    const line = pickLine(lastPreRollRef.current, PRE_ROLL_LINES);
-    lastPreRollRef.current = line;
-    speak(line).then(() => {
-      if (active) setPhase('resolving');
-    }).catch(console.error);
-    return () => { active = false; stopSpeech(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
-
-  // resolving: reveal dice number after pauseDiceReveal, then transition after pauseDiceRoll
+  // resolving: speak pre-roll line concurrently while dice animation plays
   useEffect(() => {
     if (phase !== 'resolving' || !rollResultRef.current) return;
+    const line = pickLine(lastPreRollRef.current, PRE_ROLL_LINES);
+    lastPreRollRef.current = line;
+    speak(line).catch(console.error);
     setDiceRevealed(false);
     const revealTimer = setTimeout(() => setDiceRevealed(true), SETTINGS.pauseDiceReveal);
     const doneTimer   = setTimeout(() => {
       const result = rollResultRef.current!;
       const kind   = result.success ? 'affirmative' : 'negative';
-      const line   = pickReaction(kind, lastReaction, REACTION_LINES);
-      setReactionLine(line);
-      setLastReaction(line);
+      const reaction = pickReaction(kind, lastReaction, REACTION_LINES);
+      setReactionLine(reaction);
+      setLastReaction(reaction);
       setPhase('reacting');
     }, SETTINGS.pauseDiceRoll);
-    return () => { clearTimeout(revealTimer); clearTimeout(doneTimer); };
+    return () => { clearTimeout(revealTimer); clearTimeout(doneTimer); stopSpeech(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
@@ -346,7 +336,7 @@ export default function Home() {
     const result = resolveRoll(threshold);
     rollResultRef.current = result;
     setRollResult(result);
-    setPhase('pre-rolling');
+    setPhase('resolving');
   };
 
   const handleReplay = () => {
