@@ -12,6 +12,7 @@ import { GREETING_LINES, PRE_ROLL_LINES, REACTION_LINES } from '@/lib/game/react
 import { pickEncounter, resolveRoll, pickReaction, pickLine, stepRange, luckBonusForTurn } from '@/lib/game/engine';
 import { SETTINGS } from '@/lib/game/settings';
 import { playClickSound } from '@/lib/game/playClickSound';
+import { replaceShortcodes } from '@/lib/game/replaceShortcodes';
 import type { Encounter, RollResult } from '@/lib/game/types';
 
 // ─── Audio constants ────────────────────────────────────────────────────────
@@ -61,11 +62,12 @@ async function startMusicBed(ctx: AudioContext): Promise<void> {
 }
 
 // ─── Phase type ─────────────────────────────────────────────────────────────
-type Phase = 'start' | 'greeting' | 'presenting' | 'pre-rolling' | 'resolving' | 'reacting' | 'results';
+type Phase = 'start' | 'naming' | 'greeting' | 'presenting' | 'pre-rolling' | 'resolving' | 'reacting' | 'results';
 
 // 0=intro  1=avatar  2=dice  3=winlose
 const PHASE_TO_SCENE: Record<Phase, number> = {
   start:          0,
+  naming:         0,
   greeting:       1,
   presenting:     1,
   'pre-rolling':  1,
@@ -76,6 +78,11 @@ const PHASE_TO_SCENE: Record<Phase, number> = {
 
 // ─── Page ───────────────────────────────────────────────────────────────────
 export default function Home() {
+  // Player name
+  const [playerName,    setPlayerName]    = useState('');
+  const [nameInput,     setNameInput]     = useState('');
+  const [nameError,     setNameError]     = useState('');
+
   // Game state
   const [phase,         setPhase]         = useState<Phase>('start');
   const [streak,        setStreak]        = useState(0);
@@ -94,6 +101,9 @@ export default function Home() {
   // Responsive start screen scale (switches at Tailwind's md breakpoint: 768px)
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
+    const saved = localStorage.getItem('playerName') ?? '';
+    if (saved) { setPlayerName(saved); setNameInput(saved); }
+
     document.title = SETTINGS.pageTitle;
     if (SETTINGS.faviconSrc) {
       const el = (document.querySelector("link[rel~='icon']") as HTMLLinkElement) ?? document.createElement('link');
@@ -257,8 +267,9 @@ export default function Home() {
   useEffect(() => {
     if (phase !== 'greeting') return;
     let active = true;
-    const greeting = pickLine(lastGreetingRef.current, GREETING_LINES);
-    lastGreetingRef.current = greeting;
+    const raw = pickLine(lastGreetingRef.current, GREETING_LINES);
+    const greeting = replaceShortcodes(raw, playerName);
+    lastGreetingRef.current = raw;
     setCurrentDialogue(greeting);
     speak(greeting).then(() => {
       if (!active) return;
@@ -274,8 +285,9 @@ export default function Home() {
   // presenting: speak encounter narration, then await player choice
   useEffect(() => {
     if (phase !== 'presenting' || !encounter) return;
-    setCurrentDialogue(encounter.narration);
-    speak(encounter.narration).catch(console.error);
+    const narration = replaceShortcodes(encounter.narration, playerName);
+    setCurrentDialogue(narration);
+    speak(narration).catch(console.error);
     return () => stopSpeech();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, encounter?.id]);
@@ -283,8 +295,9 @@ export default function Home() {
   // resolving: speak pre-roll line concurrently while dice animation plays
   useEffect(() => {
     if (phase !== 'resolving' || !rollResultRef.current) return;
-    const line = pickLine(lastPreRollRef.current, PRE_ROLL_LINES);
-    lastPreRollRef.current = line;
+    const rawLine = pickLine(lastPreRollRef.current, PRE_ROLL_LINES);
+    const line = replaceShortcodes(rawLine, playerName);
+    lastPreRollRef.current = rawLine;
     setCurrentDialogue(line);
     speak(line).catch(console.error);
     setDiceRevealed(false);
@@ -292,9 +305,10 @@ export default function Home() {
     const doneTimer   = setTimeout(() => {
       const result = rollResultRef.current!;
       const kind   = result.success ? 'affirmative' : 'negative';
-      const reaction = pickReaction(kind, result.choiceIndex, lastReaction, REACTION_LINES);
+      const rawReaction = pickReaction(kind, result.choiceIndex, lastReaction, REACTION_LINES);
+      const reaction = replaceShortcodes(rawReaction, playerName);
       setReactionLine(reaction);
-      setLastReaction(reaction);
+      setLastReaction(rawReaction);
       setPhase('reacting');
     }, SETTINGS.pauseDiceRoll);
     return () => { clearTimeout(revealTimer); clearTimeout(doneTimer); stopSpeech(); };
@@ -305,8 +319,9 @@ export default function Home() {
   useEffect(() => {
     if (phase !== 'reacting' || !reactionLine) return;
     let active = true;
-    setCurrentDialogue(reactionLine);
-    speak(reactionLine).then(() => {
+    const resolvedReaction = replaceShortcodes(reactionLine, playerName);
+    setCurrentDialogue(resolvedReaction);
+    speak(resolvedReaction).then(() => {
       if (!active) return;
       if (rollResultRef.current?.success) {
         const nextStreak = streakRef.current + (rollResultRef.current?.steps ?? 1);
@@ -374,6 +389,24 @@ export default function Home() {
   const handleStart = () => {
     setIsStartFading(true);
     unlock();
+    setPhase('naming');
+  };
+
+  const handleSaveName = () => {
+    const trimmed = nameInput.trim();
+    if (!trimmed) { setNameError('Please enter a name.'); return; }
+    // bad-words check runs dynamically to avoid SSR issues
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { Filter } = require('bad-words') as { Filter: new () => { isProfane: (s: string) => boolean } };
+      if (new Filter().isProfane(trimmed)) {
+        setNameError('Please choose a different name.');
+        return;
+      }
+    } catch { /* package unavailable — skip check */ }
+    setNameError('');
+    setPlayerName(trimmed);
+    localStorage.setItem('playerName', trimmed);
     setTimeout(() => setPhase('greeting'), SETTINGS.pauseBeforeGreeting);
   };
 
@@ -399,9 +432,10 @@ export default function Home() {
     usedIdsRef.current      = new Set();
     encounterCountRef.current = 0;
     setIsStartFading(false);
-    setShowStartButton(false); // skip showing the begin button on replay
+    setShowStartButton(false);
     setPhase('start');
     unlock();
+    // skip naming screen on replay if we already have a name
     setTimeout(() => setPhase('greeting'), SETTINGS.pauseBeforeGreeting);
   };
 
@@ -441,7 +475,7 @@ export default function Home() {
       {/* HUD bar */}
       <div
         className="w-full max-w-lg h-16 flex items-end justify-between px-2 pb-1 transition-opacity duration-300 shrink-0"
-        style={{ opacity: phase === 'start' ? 0 : 1 }}
+        style={{ opacity: (phase === 'start' || phase === 'naming') ? 0 : 1 }}
       >
         <span className="font-mono text-sm text-green-500">Streak: {streak}</span>
       </div>
@@ -460,6 +494,45 @@ export default function Home() {
                className="flex flex-col items-center gap-0">
             <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-[317px] -mb-3" />
             <HexButton onClick={handleStart}>Enter</HexButton>
+          </div>
+        </div>
+      )}
+
+      {/* Naming overlay */}
+      {phase === 'naming' && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8">
+          <div className="flex flex-col items-center gap-6 w-full max-w-sm px-6">
+
+            {/* Input */}
+            <div className="w-full flex flex-col items-center gap-2">
+              <input
+                type="text"
+                value={nameInput}
+                onChange={e => { setNameInput(e.target.value.slice(0, 20)); setNameError(''); }}
+                onKeyDown={e => e.key === 'Enter' && handleSaveName()}
+                placeholder="type your name"
+                autoFocus
+                className="w-full bg-transparent border-b border-white/30 text-center font-body text-white/50 text-lg tracking-widest placeholder:text-white/30 focus:outline-none focus:border-white/60 transition-colors pb-2"
+              />
+              {nameError && (
+                <p className="font-body text-sm text-red-400/80 tracking-wide">{nameError}</p>
+              )}
+            </div>
+
+            {/* Live name display */}
+            {nameInput.trim() && (
+              <p
+                className="font-display text-accent text-center leading-none"
+                style={{ fontSize: 'clamp(3rem, 10vw, 6rem)' }}
+              >
+                {nameInput.trim()}
+              </p>
+            )}
+
+            {/* Save button */}
+            <HexButton onClick={handleSaveName} disabled={!nameInput.trim()}>
+              Save
+            </HexButton>
           </div>
         </div>
       )}

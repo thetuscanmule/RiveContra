@@ -1,9 +1,9 @@
 {
   "greeting": [
-    "Welcome... mortal. You dare enter my domain? Hm. Let us see how long that nerve holds.",
-    "Ah. Another one. They always look so confident at the door.",
-    "You step in as though you belong here. Interesting. Let us test that theory.",
-    "The dungeon has been waiting. It is patient. Are you?"
+    "Welcome, [player]. You dare enter my domain? Hm. Let us see how long that nerve holds.",
+    "Ah. [player]. They always look so confident at the door.",
+    "[player]. You step in as though you belong here. Interesting. Let us test that theory.",
+    "The dungeon has been waiting, [player]. It is patient. Are you?"
   ],
   "preRoll": [
     "The bones decide...",

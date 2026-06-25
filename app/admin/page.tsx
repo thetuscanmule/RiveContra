@@ -1518,13 +1518,16 @@ function GameTimeline({
         <TLEvent label="Page loads" sub="Rive intro scene begins playing immediately" />
         <TLPause label="Intro plays" maxMs={maxMs} variable />
 
-        <TLEvent label='"Begin Journey" clicked' />
+        <TLEvent label='"Enter" clicked' />
         <TLPause label="pauseUiFade — start screen fades out" value={settings.pauseUiFade} maxMs={maxMs} input={num('pauseUiFade', 50)} />
 
-        <TLEvent label="Start screen hidden" />
+        <TLEvent label="Name entry screen shown" sub="Player types name and clicks Save" />
+        <TLPause label="Player input — variable duration" maxMs={maxMs} variable />
+
+        <TLEvent label="Name saved" />
         <TLPause label="pauseBeforeGreeting — countdown before greeting" value={settings.pauseBeforeGreeting} maxMs={maxMs} input={num('pauseBeforeGreeting')} />
 
-        <TLEvent label="Greeting speech begins" sub="ElevenLabs TTS — variable duration" />
+        <TLEvent label="Greeting speech begins" sub="ElevenLabs TTS — variable duration, includes [player] name" />
         <TLPause label="Greeting speech" maxMs={maxMs} variable />
 
         <TLEvent label="First encounter presented" sub="User picks an option" />
