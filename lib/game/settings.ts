@@ -27,8 +27,11 @@ export const SETTINGS = data as {
     inputDiceWin:  string;
     inputDiceFail: string;
   };
+  pageTitle:            string;
+  faviconSrc:           string;
   smoothing:            number;
   speechSpeed:          number;
+  contraUrl:            string;
   pauseBeforeGreeting:  number;
   pauseDiceReveal:      number;
   pauseDiceRoll:        number;
@@ -37,7 +40,12 @@ export const SETTINGS = data as {
   dialogueFade:         number;
   luck:                 number;
   layout:               { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number };
-  buttonMinWidth:       number;
+  buttonMinWidth:        number;
+  buttonPaddingX:        number;
+  buttonPaddingY:        number;
+  resultsButtonMinWidth: number;
+  optionButtonMinWidth: number;
+  optionButtonGap:      number;
   startScreen:          { scale: number; scaleMobile: number };
   dialogue:             DialogueConfig;
   riveScale:            { scale: number; scaleMobile: number };

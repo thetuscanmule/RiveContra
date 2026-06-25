@@ -94,6 +94,16 @@ export default function Home() {
   // Responsive start screen scale (switches at Tailwind's md breakpoint: 768px)
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
+    document.title = SETTINGS.pageTitle;
+    if (SETTINGS.faviconSrc) {
+      const el = (document.querySelector("link[rel~='icon']") as HTMLLinkElement) ?? document.createElement('link');
+      el.rel = 'icon';
+      el.href = SETTINGS.faviconSrc;
+      document.head.appendChild(el);
+    }
+  }, []);
+
+  useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener('resize', check);
@@ -408,7 +418,7 @@ export default function Home() {
       : null;
 
   const gradientTheme: ThemeKey =
-    ((phase === 'resolving' && diceRevealed) || phase === 'results')
+    (phase === 'resolving' && diceRevealed)
       ? (rollResult?.success ? 'win' : 'lose')
       : 'default';
 
@@ -419,14 +429,6 @@ export default function Home() {
     <BackgroundGradient theme={gradientTheme} />
     <BackgroundTexture />
     <BackgroundRings />
-
-    {/* Leaderboard — top-right, fixed */}
-    <a
-      href="#"
-      className="fixed top-6 right-8 z-20 font-body text-sm text-white/60 transition-colors duration-150 hover:text-accent"
-    >
-      Leaderboard
-    </a>
 
     {/* RiveXContra logo — bottom-center, fixed */}
     <img
@@ -441,7 +443,6 @@ export default function Home() {
         className="w-full max-w-lg h-16 flex items-end justify-between px-2 pb-1 transition-opacity duration-300 shrink-0"
         style={{ opacity: phase === 'start' ? 0 : 1 }}
       >
-        <span className="text-xs uppercase tracking-widest text-gray-600">Dice Quest</span>
         <span className="font-mono text-sm text-green-500">Streak: {streak}</span>
       </div>
 
@@ -463,6 +464,38 @@ export default function Home() {
         </div>
       )}
 
+      {/* Results overlay — full-screen, sits above everything */}
+      {phase === 'results' && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8">
+
+          {/* Leaderboard link — top right */}
+          <a
+            href="#"
+            className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80"
+          >
+            Leaderboard
+          </a>
+
+          {/* Score display */}
+          <div className="flex flex-col items-center gap-3">
+            <h2 className="font-display tracking-widest text-white/50 text-base">Score</h2>
+            <div className="w-32 border-t border-white/20" />
+            <p className="font-display text-accent" style={{ fontSize: 'clamp(5rem, 12vw, 9rem)', lineHeight: 1 }}>
+              {streak}
+            </p>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex flex-col items-center" style={{ gap: `${SETTINGS.optionButtonGap}vh` }}>
+            <HexButton onClick={() => { playClickSound(); handleReplay(); }} style={{ minWidth: SETTINGS.resultsButtonMinWidth }}>Play Again</HexButton>
+            {SETTINGS.contraUrl && (
+              <HexButton onClick={() => window.open(SETTINGS.contraUrl, '_blank')} style={{ minWidth: SETTINGS.resultsButtonMinWidth }}>View on Contra</HexButton>
+            )}
+          </div>
+
+        </div>
+      )}
+
       {/* Centred block: Rive canvas (row 1) + UI panel (row 2) */}
       <div className="flex-1 flex items-center justify-center">
         <div
@@ -478,22 +511,6 @@ export default function Home() {
             <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome}
               scale={isMobile ? SETTINGS.riveScale.scaleMobile : SETTINGS.riveScale.scale} />
 
-            {/* Results overlay */}
-            {phase === 'results' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80 rounded-xl gap-6">
-                <p className="text-gray-400 text-sm uppercase tracking-widest">The run ends here</p>
-                <p className="text-6xl font-black text-white">{streak}</p>
-                <p className="text-gray-500 text-sm">
-                  {streak === 1 ? 'encounter survived' : 'encounters survived'}
-                </p>
-                <button
-                  onClick={() => { playClickSound(); handleReplay(); }}
-                  className="mt-2 rounded-lg bg-green-700 px-8 py-3 font-semibold text-white hover:bg-green-600 transition-colors"
-                >
-                  Play again
-                </button>
-              </div>
-            )}
 
             {/* Jaw debug */}
             <span className="absolute bottom-2 right-3 font-mono text-xs tabular-nums text-green-700">
@@ -543,10 +560,11 @@ export default function Home() {
 
         {/* Option buttons — fades in once narration speech ends */}
         <div
-          className="absolute inset-0 flex flex-col justify-center gap-2"
+          className="absolute inset-0 flex flex-col items-center justify-center"
           style={{
-            opacity:    (phase === 'presenting' && optionsReady) ? 1 : 0,
-            transition: `opacity ${SETTINGS.dialogueFade}ms ease`,
+            gap:           `${SETTINGS.optionButtonGap}vh`,
+            opacity:       (phase === 'presenting' && optionsReady) ? 1 : 0,
+            transition:    `opacity ${SETTINGS.dialogueFade}ms ease`,
             pointerEvents: (phase === 'presenting' && optionsReady) ? 'auto' : 'none',
           }}
         >
@@ -554,7 +572,8 @@ export default function Home() {
             <HexButton
               key={opt.threshold}
               onClick={() => handleOption(opt.threshold, i)}
-              innerClassName="px-6 py-[11px]"
+              innerClassName=""
+              style={{ minWidth: SETTINGS.optionButtonMinWidth }}
             >
               <span className="flex items-center justify-between gap-4 w-full">
                 <span>{opt.label}</span>

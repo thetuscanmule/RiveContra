@@ -10,14 +10,14 @@ type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Opt
 type AffirmativePools = { safe: string[]; medium: string[]; risky: string[] };
 type Reactions = { greeting: string[]; preRoll: string[]; affirmative: AffirmativePools; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; luck: number; layout: { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number }; buttonMinWidth: number; startScreen: { scale: number; scaleMobile: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; pageTitle: string; faviconSrc: string; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; contraUrl: string; resultsButtonMinWidth: number; buttonPaddingX: number; buttonPaddingY: number; luck: number; optionButtonMinWidth: number; optionButtonGap: number; layout: { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number }; buttonMinWidth: number; startScreen: { scale: number; scaleMobile: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: [], preRoll: [], affirmative: { safe: [], medium: [], risky: [] }, negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, luck: 0, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, startScreen: { scale: 1.0, scaleMobile: 1.0 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, pageTitle: 'Dice Quest', faviconSrc: '', smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, contraUrl: '', resultsButtonMinWidth: 280, buttonPaddingX: 64, buttonPaddingY: 11, luck: 0, optionButtonMinWidth: 320, optionButtonGap: 1, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, startScreen: { scale: 1.0, scaleMobile: 1.0 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const [tab,        setTab]        = useState<'ui' | 'gameplay'>('ui');
@@ -190,6 +190,62 @@ export default function AdminPage() {
       {/* ══ UI TAB ══════════════════════════════════════════════════════════ */}
       {tab === 'ui' && <>
 
+        {/* ── Page ── */}
+        <section>
+          <SectionHeading title="Page" />
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Page title</FieldLabel>
+                <p className="text-xs text-gray-400">Shown in the browser tab.</p>
+              </div>
+              <input
+                type="text"
+                value={settings.pageTitle}
+                onChange={e => setSettings(s => ({ ...s, pageTitle: e.target.value }))}
+                className="ml-6 w-56 rounded border border-gray-200 px-2 py-1.5 font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+              />
+            </div>
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Favicon</FieldLabel>
+                <p className="text-xs text-gray-400">ICO, PNG, SVG or WebP.</p>
+                {settings.faviconSrc && <p className="mt-0.5 font-mono text-xs text-gray-400">{settings.faviconSrc.split('/').pop()}</p>}
+              </div>
+              <div className="flex items-center gap-2 shrink-0 ml-6">
+                {settings.faviconSrc && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={settings.faviconSrc} alt="favicon preview" className="h-6 w-6 object-contain" />
+                )}
+                <input
+                  id="favicon-file-input"
+                  type="file"
+                  accept=".ico,.png,.svg,.webp,image/x-icon,image/png,image/svg+xml,image/webp"
+                  className="hidden"
+                  onChange={async e => {
+                    const file = e.target.files?.[0];
+                    e.target.value = '';
+                    if (!file) return;
+                    const fd = new FormData();
+                    fd.append('file', file);
+                    const res = await fetch('/api/admin/upload-favicon', { method: 'POST', body: fd });
+                    if (res.ok) {
+                      const { src } = await res.json() as { src: string };
+                      setSettings(s => ({ ...s, faviconSrc: src }));
+                    }
+                  }}
+                />
+                <button
+                  onClick={() => document.getElementById('favicon-file-input')?.click()}
+                  className="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                >
+                  {settings.faviconSrc ? 'Replace' : 'Upload'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── Background ── */}
         <section>
           <SectionHeading title="Background" />
@@ -320,7 +376,7 @@ export default function AdminPage() {
         {/* ── Buttons ── */}
         <section>
           <SectionHeading title="Buttons" />
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
             <div className="flex items-center justify-between px-5 py-4">
               <div>
                 <FieldLabel>Min width</FieldLabel>
@@ -331,6 +387,81 @@ export default function AdminPage() {
                   type="number" min={80} max={600} step={4}
                   value={settings.buttonMinWidth}
                   onChange={e => setSettings(s => ({ ...s, buttonMinWidth: Number(e.target.value) }))}
+                  className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">px</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Horizontal padding</FieldLabel>
+                <p className="text-xs text-gray-400">Left/right padding inside every button.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} max={200} step={2}
+                  value={settings.buttonPaddingX}
+                  onChange={e => setSettings(s => ({ ...s, buttonPaddingX: Number(e.target.value) }))}
+                  className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">px</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Vertical padding</FieldLabel>
+                <p className="text-xs text-gray-400">Top/bottom padding inside every button.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} max={80} step={1}
+                  value={settings.buttonPaddingY}
+                  onChange={e => setSettings(s => ({ ...s, buttonPaddingY: Number(e.target.value) }))}
+                  className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">px</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Option button min width</FieldLabel>
+                <p className="text-xs text-gray-400">Minimum width of the multiple choice answer buttons.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={80} max={800} step={4}
+                  value={settings.optionButtonMinWidth}
+                  onChange={e => setSettings(s => ({ ...s, optionButtonMinWidth: Number(e.target.value) }))}
+                  className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">px</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Option button gap</FieldLabel>
+                <p className="text-xs text-gray-400">Spacing between multiple choice buttons (% vh).</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} max={10} step={0.25}
+                  value={settings.optionButtonGap}
+                  onChange={e => setSettings(s => ({ ...s, optionButtonGap: Number(e.target.value) }))}
+                  className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">vh</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Results button min width</FieldLabel>
+                <p className="text-xs text-gray-400">Minimum width of the Play Again and View on Contra buttons.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={80} max={600} step={4}
+                  value={settings.resultsButtonMinWidth}
+                  onChange={e => setSettings(s => ({ ...s, resultsButtonMinWidth: Number(e.target.value) }))}
                   className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
                 />
                 <span className="text-xs text-gray-400">px</span>
@@ -420,6 +551,26 @@ export default function AdminPage() {
             dialogue={settings.dialogue}
             onChange={d => setSettings(s => ({ ...s, dialogue: d }))}
           />
+        </section>
+
+        {/* ── Results Screen ── */}
+        <section>
+          <SectionHeading title="Results Screen" />
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Contra URL</FieldLabel>
+                <p className="text-xs text-gray-400">"View on Contra" button — leave blank to hide it.</p>
+              </div>
+              <input
+                type="url"
+                value={settings.contraUrl}
+                onChange={e => setSettings(s => ({ ...s, contraUrl: e.target.value }))}
+                placeholder="https://contra.com/…"
+                className="ml-6 w-64 rounded border border-gray-200 px-2 py-1.5 font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+              />
+            </div>
+          </div>
         </section>
 
         {/* ── UI Sounds ── */}
