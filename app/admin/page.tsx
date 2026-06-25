@@ -560,7 +560,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between px-5 py-4">
               <div>
                 <FieldLabel>Contra URL</FieldLabel>
-                <p className="text-xs text-gray-400">"View on Contra" button — leave blank to hide it.</p>
+                <p className="text-xs text-gray-400">&quot;View on Contra&quot; button — leave blank to hide it.</p>
               </div>
               <input
                 type="url"
