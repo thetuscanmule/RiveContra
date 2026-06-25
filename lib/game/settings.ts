@@ -35,6 +35,7 @@ export const SETTINGS = data as {
   pauseBeforeResults:   number;
   pauseUiFade:          number;
   dialogueFade:         number;
+  layout:               { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number };
   buttonMinWidth:       number;
   startScreen:          { scale: number; scaleMobile: number };
   dialogue:             DialogueConfig;

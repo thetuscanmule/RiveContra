@@ -9,14 +9,14 @@ type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; buttonMinWidth: number; startScreen: { scale: number; scaleMobile: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; layout: { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number }; buttonMinWidth: number; startScreen: { scale: number; scaleMobile: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, buttonMinWidth: 200, startScreen: { scale: 1.0, scaleMobile: 1.0 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, startScreen: { scale: 1.0, scaleMobile: 1.0 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const [tab,        setTab]        = useState<'ui' | 'gameplay'>('ui');
@@ -245,6 +245,68 @@ export default function AdminPage() {
                 onChange={updated => setSettings(s => ({ ...s, cursor: { ...s.cursor, [slot]: updated } }))}
               />
             ))}
+          </div>
+        </section>
+
+        {/* ── Layout ── */}
+        <section>
+          <SectionHeading title="Layout" />
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+
+            {/* Block offset */}
+            <div className="px-5 py-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Block offset from centre (% vh)</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <FieldLabel>Desktop</FieldLabel>
+                    <span className="font-mono text-xs text-gray-500">{settings.layout.blockOffset > 0 ? '+' : ''}{settings.layout.blockOffset}%</span>
+                  </div>
+                  <input type="range" min={-30} max={30} step={1}
+                    value={settings.layout.blockOffset}
+                    onChange={e => setSettings(s => ({ ...s, layout: { ...s.layout, blockOffset: Number(e.target.value) } }))}
+                    className="w-full accent-gray-700" />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <FieldLabel>Mobile</FieldLabel>
+                    <span className="font-mono text-xs text-gray-500">{settings.layout.blockOffsetMobile > 0 ? '+' : ''}{settings.layout.blockOffsetMobile}%</span>
+                  </div>
+                  <input type="range" min={-30} max={30} step={1}
+                    value={settings.layout.blockOffsetMobile}
+                    onChange={e => setSettings(s => ({ ...s, layout: { ...s.layout, blockOffsetMobile: Number(e.target.value) } }))}
+                    className="w-full accent-gray-700" />
+                </div>
+              </div>
+            </div>
+
+            {/* Row gap */}
+            <div className="px-5 py-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Gap between rows (% vh)</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <FieldLabel>Desktop</FieldLabel>
+                    <span className="font-mono text-xs text-gray-500">{settings.layout.rowGap}%</span>
+                  </div>
+                  <input type="range" min={0} max={15} step={0.5}
+                    value={settings.layout.rowGap}
+                    onChange={e => setSettings(s => ({ ...s, layout: { ...s.layout, rowGap: Number(e.target.value) } }))}
+                    className="w-full accent-gray-700" />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <FieldLabel>Mobile</FieldLabel>
+                    <span className="font-mono text-xs text-gray-500">{settings.layout.rowGapMobile}%</span>
+                  </div>
+                  <input type="range" min={0} max={15} step={0.5}
+                    value={settings.layout.rowGapMobile}
+                    onChange={e => setSettings(s => ({ ...s, layout: { ...s.layout, rowGapMobile: Number(e.target.value) } }))}
+                    className="w-full accent-gray-700" />
+                </div>
+              </div>
+            </div>
+
           </div>
         </section>
 

@@ -427,11 +427,11 @@ export default function Home() {
       alt="Rive × Contra"
       className="fixed bottom-7 left-1/2 z-20 h-[28px] -translate-x-1/2 opacity-60 transition-opacity duration-150 hover:opacity-100"
     />
-    <main className="relative z-10 min-h-screen flex flex-col items-center justify-center gap-6 p-8">
+    <main className="relative z-10 min-h-screen flex flex-col items-center">
 
-      {/* Top spacer — smaller than bottom panel to position canvas above centre */}
+      {/* HUD bar */}
       <div
-        className="w-full max-w-lg h-16 flex items-end justify-between pb-1 transition-opacity duration-300"
+        className="w-full max-w-lg h-16 flex items-end justify-between px-2 pb-1 transition-opacity duration-300 shrink-0"
         style={{ opacity: phase === 'start' ? 0 : 1 }}
       >
         <span className="text-xs uppercase tracking-widest text-gray-600">Dice Quest</span>
@@ -456,36 +456,46 @@ export default function Home() {
         </div>
       )}
 
-      {/* Rive canvas — always rendered so intro plays on page load */}
-      <div className="relative">
-        <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome}
-          scale={isMobile ? SETTINGS.riveScale.scaleMobile : SETTINGS.riveScale.scale} />
+      {/* Centred block: Rive canvas (row 1) + UI panel (row 2) */}
+      <div className="flex-1 flex items-center justify-center">
+        <div
+          className="flex flex-col items-center"
+          style={{
+            transform:  `translateY(${isMobile ? SETTINGS.layout.blockOffsetMobile : SETTINGS.layout.blockOffset}vh)`,
+            gap:        `${isMobile ? SETTINGS.layout.rowGapMobile : SETTINGS.layout.rowGap}vh`,
+          }}
+        >
 
-        {/* Results overlay */}
-        {phase === 'results' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80 rounded-xl gap-6">
-            <p className="text-gray-400 text-sm uppercase tracking-widest">The run ends here</p>
-            <p className="text-6xl font-black text-white">{streak}</p>
-            <p className="text-gray-500 text-sm">
-              {streak === 1 ? 'encounter survived' : 'encounters survived'}
-            </p>
-            <button
-              onClick={() => { playClickSound(); handleReplay(); }}
-              className="mt-2 rounded-lg bg-green-700 px-8 py-3 font-semibold text-white hover:bg-green-600 transition-colors"
-            >
-              Play again
-            </button>
+          {/* Row 1 — Rive canvas */}
+          <div className="relative">
+            <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome}
+              scale={isMobile ? SETTINGS.riveScale.scaleMobile : SETTINGS.riveScale.scale} />
+
+            {/* Results overlay */}
+            {phase === 'results' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80 rounded-xl gap-6">
+                <p className="text-gray-400 text-sm uppercase tracking-widest">The run ends here</p>
+                <p className="text-6xl font-black text-white">{streak}</p>
+                <p className="text-gray-500 text-sm">
+                  {streak === 1 ? 'encounter survived' : 'encounters survived'}
+                </p>
+                <button
+                  onClick={() => { playClickSound(); handleReplay(); }}
+                  className="mt-2 rounded-lg bg-green-700 px-8 py-3 font-semibold text-white hover:bg-green-600 transition-colors"
+                >
+                  Play again
+                </button>
+              </div>
+            )}
+
+            {/* Jaw debug */}
+            <span className="absolute bottom-2 right-3 font-mono text-xs tabular-nums text-green-700">
+              jaw {jawOpen.toFixed(3)}
+            </span>
           </div>
-        )}
 
-        {/* Jaw debug */}
-        <span className="absolute bottom-2 right-3 font-mono text-xs tabular-nums text-green-700">
-          jaw {jawOpen.toFixed(3)}
-        </span>
-      </div>
-
-      {/* Bottom panel — fixed height so canvas never shifts when content changes */}
-      <div className="relative w-full max-w-lg h-44">
+          {/* Row 2 — Dialogue + option buttons */}
+          <div className="relative w-full max-w-lg h-44">
 
         {/* Dialogue — shown whenever currentDialogue is set, fades out for options */}
         <div
@@ -550,6 +560,10 @@ export default function Home() {
         </div>
 
       </div>
+
+        </div>{/* end centered block */}
+      </div>{/* end flex-1 */}
+
     </main>
     </>
   );

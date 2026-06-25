@@ -19,13 +19,13 @@
         "falloff": 90
       },
       "win": {
-        "inner": "#35bb64",
-        "outer": "#116b0f",
+        "inner": "#5b6713",
+        "outer": "#080808",
         "falloff": 75
       },
       "lose": {
-        "inner": "#d2282e",
-        "outer": "#a13a3a",
+        "inner": "#7e1b1e",
+        "outer": "#080808",
         "falloff": 75
       }
     }
@@ -64,6 +64,12 @@
   "pauseBeforeResults": 2000,
   "pauseUiFade": 400,
   "dialogueFade": 600,
+  "layout": {
+    "blockOffset": -5,
+    "blockOffsetMobile": -10,
+    "rowGap": 2,
+    "rowGapMobile": 10
+  },
   "buttonMinWidth": 220,
   "startScreen": {
     "scale": 1.2,
