@@ -91,6 +91,12 @@ export default function Home() {
   const [isSpeaking,     setIsSpeaking]     = useState(false);
   const [isStartFading,  setIsStartFading]  = useState(false);
   const [showStartButton, setShowStartButton] = useState(true);
+  // optionsReady: true only after speaking has finished during 'presenting'
+  // (avoids 1-frame flash of buttons at phase entry before speak() sets isSpeaking=true)
+  const [optionsReady,   setOptionsReady]   = useState(false);
+  // currentDialogue: the text being spoken — set before each speak() call so the
+  // dialogue panel is populated before the avatar opens its mouth
+  const [currentDialogue, setCurrentDialogue] = useState('');
 
   // Audio refs (stable across renders)
   const audioCtxRef    = useRef<AudioContext | null>(null);
@@ -114,6 +120,16 @@ export default function Home() {
   useEffect(() => { rollResultRef.current = rollResult; }, [rollResult]);
   useEffect(() => { streakRef.current = streak; },        [streak]);
   useEffect(() => { usedIdsRef.current = usedIds; },      [usedIds]);
+
+  // Reset optionsReady whenever a new encounter begins
+  useEffect(() => { setOptionsReady(false); }, [encounter?.id]);
+  // Set optionsReady after speaking finishes during presenting.
+  // 100ms guard skips the brief isSpeaking=false at phase entry before speak() fires.
+  useEffect(() => {
+    if (phase !== 'presenting' || isSpeaking || !encounter) return;
+    const t = setTimeout(() => setOptionsReady(true), 100);
+    return () => clearTimeout(t);
+  }, [phase, isSpeaking, encounter]);
 
   // ── Audio helpers ──────────────────────────────────────────────────────────
 
@@ -220,6 +236,7 @@ export default function Home() {
   useEffect(() => {
     if (phase !== 'greeting') return;
     let active = true;
+    setCurrentDialogue(GREETING);
     speak(GREETING).then(() => {
       if (!active) return;
       const enc = pickEncounter(0, new Set(), ENCOUNTERS);
@@ -234,6 +251,7 @@ export default function Home() {
   // presenting: speak encounter narration, then await player choice
   useEffect(() => {
     if (phase !== 'presenting' || !encounter) return;
+    setCurrentDialogue(encounter.narration);
     speak(encounter.narration).catch(console.error);
     return () => stopSpeech();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -244,6 +262,7 @@ export default function Home() {
     if (phase !== 'resolving' || !rollResultRef.current) return;
     const line = pickLine(lastPreRollRef.current, PRE_ROLL_LINES);
     lastPreRollRef.current = line;
+    setCurrentDialogue(line);
     speak(line).catch(console.error);
     setDiceRevealed(false);
     const revealTimer = setTimeout(() => setDiceRevealed(true), SETTINGS.pauseDiceReveal);
@@ -263,6 +282,7 @@ export default function Home() {
   useEffect(() => {
     if (phase !== 'reacting' || !reactionLine) return;
     let active = true;
+    setCurrentDialogue(reactionLine);
     speak(reactionLine).then(() => {
       if (!active) return;
       if (rollResultRef.current?.success) {
@@ -400,15 +420,27 @@ export default function Home() {
     />
     <main className="relative z-10 min-h-screen flex flex-col items-center justify-center gap-6 p-8">
 
-      {/* Streak bar — hidden on start screen */}
-      {phase !== 'start' && (
-        <div className="flex items-center justify-between w-full max-w-lg">
-          <span className="text-xs uppercase tracking-widest text-gray-600">
-            Dice Quest
-          </span>
-          <span className="font-mono text-sm text-green-500">
-            Streak: {streak}
-          </span>
+      {/* Top spacer — smaller than bottom panel to position canvas above centre */}
+      <div
+        className="w-full max-w-lg h-16 flex items-end justify-between pb-1 transition-opacity duration-300"
+        style={{ opacity: phase === 'start' ? 0 : 1 }}
+      >
+        <span className="text-xs uppercase tracking-widest text-gray-600">Dice Quest</span>
+        <span className="font-mono text-sm text-green-500">Streak: {streak}</span>
+      </div>
+
+      {/* Start overlay — over full main area so logo+button are viewport-centred */}
+      {phase === 'start' && showStartButton && (
+        <div
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-0 text-center"
+          style={{
+            opacity:       isStartFading ? 0 : 1,
+            transition:    `opacity ${SETTINGS.pauseUiFade}ms ease-out`,
+            pointerEvents: isStartFading ? 'none' : 'auto',
+          }}
+        >
+          <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-[317px] -mb-3" />
+          <HexButton onClick={handleStart}>Enter</HexButton>
         </div>
       )}
 
@@ -416,88 +448,96 @@ export default function Home() {
       <div className="relative">
         <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} />
 
-        {/* ── Start overlay — hidden on replay (showStartButton=false) ── */}
-        {phase === 'start' && showStartButton && (
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-0 text-center"
-            style={{
-              opacity:       isStartFading ? 0 : 1,
-              transition:    `opacity ${SETTINGS.pauseUiFade}ms ease-out`,
-              pointerEvents: isStartFading ? 'none' : 'auto',
-            }}
-          >
-            <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-[317px] -mb-3" />
-            <HexButton onClick={handleStart}>Enter</HexButton>
-          </div>
-        )}
-
-        {/* Dice result overlay — hidden until pauseDiceReveal elapses */}
         {/* Results overlay */}
         {phase === 'results' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center
-                          bg-gray-950/80 rounded-xl gap-6">
-            <p className="text-gray-400 text-sm uppercase tracking-widest">
-              The run ends here
-            </p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80 rounded-xl gap-6">
+            <p className="text-gray-400 text-sm uppercase tracking-widest">The run ends here</p>
             <p className="text-6xl font-black text-white">{streak}</p>
             <p className="text-gray-500 text-sm">
               {streak === 1 ? 'encounter survived' : 'encounters survived'}
             </p>
             <button
               onClick={() => { playClickSound(); handleReplay(); }}
-              className="mt-2 rounded-lg bg-green-700 px-8 py-3 font-semibold
-                         text-white hover:bg-green-600 transition-colors"
+              className="mt-2 rounded-lg bg-green-700 px-8 py-3 font-semibold text-white hover:bg-green-600 transition-colors"
             >
               Play again
             </button>
           </div>
         )}
 
-
         {/* Jaw debug */}
-        <span className="absolute bottom-2 right-3 font-mono text-xs
-                         tabular-nums text-green-700">
+        <span className="absolute bottom-2 right-3 font-mono text-xs tabular-nums text-green-700">
           jaw {jawOpen.toFixed(3)}
         </span>
       </div>
 
-      {/* Encounter narration + options */}
-      {(phase === 'presenting' || phase === 'pre-rolling' || phase === 'reacting' || phase === 'greeting') &&
-        encounter && (
-        <div className="w-full max-w-lg space-y-4">
-          <p className="text-gray-300 text-sm text-center leading-relaxed min-h-[3rem]">
-            {encounter.narration}
-          </p>
+      {/* Bottom panel — fixed height so canvas never shifts when content changes */}
+      <div className="relative w-full max-w-lg h-44">
 
-          {phase === 'presenting' && (
-            <div className="flex flex-col gap-2">
-              {encounter.options.map((opt) => (
-                <button
-                  key={opt.threshold}
-                  onClick={() => { playClickSound(); handleOption(opt.threshold); }}
-                  disabled={isSpeaking}
-                  className="w-full rounded-lg border border-gray-700 bg-gray-800
-                             px-4 py-3 text-left text-sm text-gray-200
-                             hover:border-green-600 hover:bg-gray-700
-                             disabled:opacity-40 disabled:cursor-not-allowed
-                             transition-colors flex items-center justify-between gap-4"
-                >
-                  <span>{opt.label}</span>
-                  <span className="shrink-0 text-xs font-mono text-green-500">
-                    {stepRange(opt.threshold)}
-                  </span>
-                </button>
-              ))}
+        {/* Dialogue — shown whenever currentDialogue is set, fades out for options */}
+        <div
+          className="absolute inset-0 flex items-center justify-center px-2"
+          style={{
+            opacity:    (phase === 'presenting' && optionsReady) ? 0 : 1,
+            transition: `opacity ${SETTINGS.dialogueFade}ms ease`,
+            pointerEvents: 'none',
+          }}
+        >
+          {currentDialogue && phase !== 'start' && phase !== 'results' && (
+            <div className="flex flex-col items-center gap-2 text-center">
+              <h3
+                className="font-display tracking-widest"
+                style={{ fontSize: SETTINGS.dialogue.name.fontSize, opacity: SETTINGS.dialogue.name.opacity }}
+              >
+                {SETTINGS.dialogue.name.text}
+              </h3>
+              {SETTINGS.dialogue.divider.src ? (
+                <img
+                  src={SETTINGS.dialogue.divider.src}
+                  alt=""
+                  style={{ width: SETTINGS.dialogue.divider.width, opacity: SETTINGS.dialogue.divider.opacity }}
+                />
+              ) : (
+                <div style={{ width: SETTINGS.dialogue.divider.width, opacity: SETTINGS.dialogue.divider.opacity }}
+                  className="border-t border-white" />
+              )}
+              <p
+                className="font-body leading-relaxed"
+                style={{ fontSize: SETTINGS.dialogue.body.fontSize, opacity: SETTINGS.dialogue.body.opacity, lineHeight: SETTINGS.dialogue.body.lineHeight }}
+              >
+                {currentDialogue}
+              </p>
             </div>
           )}
-
-          {phase === 'reacting' && (
-            <p className="text-center text-xs text-gray-600 italic">
-              {isSpeaking ? 'Speaking…' : ''}
-            </p>
-          )}
         </div>
-      )}
+
+        {/* Option buttons — fades in once narration speech ends */}
+        <div
+          className="absolute inset-0 flex flex-col justify-center gap-2"
+          style={{
+            opacity:    (phase === 'presenting' && optionsReady) ? 1 : 0,
+            transition: `opacity ${SETTINGS.dialogueFade}ms ease`,
+            pointerEvents: (phase === 'presenting' && optionsReady) ? 'auto' : 'none',
+          }}
+        >
+          {encounter?.options.map((opt) => (
+            <button
+              key={opt.threshold}
+              onClick={() => { playClickSound(); handleOption(opt.threshold); }}
+              className="w-full rounded-lg border border-gray-700 bg-gray-800
+                         px-4 py-3 text-left text-sm text-gray-200
+                         hover:border-green-600 hover:bg-gray-700
+                         transition-colors flex items-center justify-between gap-4"
+            >
+              <span>{opt.label}</span>
+              <span className="shrink-0 text-xs font-mono text-green-500">
+                {stepRange(opt.threshold)}
+              </span>
+            </button>
+          ))}
+        </div>
+
+      </div>
     </main>
     </>
   );

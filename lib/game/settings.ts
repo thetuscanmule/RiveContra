@@ -1,6 +1,11 @@
 import data from '@/data/settings.json';
 
-export type Ring          = { src: string; opacity: number; scale: number; speed: number; direction: 'cw' | 'ccw' };
+export type Ring           = { src: string; opacity: number; scale: number; speed: number; direction: 'cw' | 'ccw' };
+export type DialogueConfig = {
+  name:    { text: string; fontSize: number; opacity: number };
+  body:    { fontSize: number; opacity: number; lineHeight: number };
+  divider: { src: string; width: number; opacity: number };
+};
 export type AudioClip     = { src: string; volume: number; loop: boolean };
 export type TextureConfig = { src: string; size: number; opacity: number };
 export type CursorSlot   = { src: string; hotspotX: number; hotspotY: number };
@@ -29,6 +34,8 @@ export const SETTINGS = data as {
   pauseDiceRoll:        number;
   pauseBeforeResults:   number;
   pauseUiFade:          number;
+  dialogueFade:         number;
+  dialogue:             DialogueConfig;
   riveScale:            number;
   texture:              TextureConfig;
   audio:                { phases: Record<string, AudioClip>; ui: { click: AudioClip } };

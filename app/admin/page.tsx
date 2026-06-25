@@ -1,7 +1,7 @@
 'use client';
 
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { AudioClip, CursorConfig, CursorSlot, GradientTheme, Ring, TextureConfig, ThemeKey } from '@/lib/game/settings';
+import { AudioClip, CursorConfig, CursorSlot, DialogueConfig, GradientTheme, Ring, TextureConfig, ThemeKey } from '@/lib/game/settings';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -9,14 +9,14 @@ type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; riveScale: number; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; dialogue: DialogueConfig; riveScale: number; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, riveScale: 1.0, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: 1.0, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -441,6 +441,23 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* Dialogue fade duration */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Dialogue fade duration</FieldLabel>
+                <p className="text-xs text-gray-400">How long the dialogue panel takes to fade in and out between narration and choices.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={50}
+                  value={settings.dialogueFade}
+                  onChange={e => setSettings(s => ({ ...s, dialogueFade: Number(e.target.value) }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -448,6 +465,15 @@ export default function AdminPage() {
         <section>
           <SectionHeading title="Game Timeline" />
           <GameTimeline settings={settings} setSettings={setSettings} />
+        </section>
+
+        {/* ── Dialogue UI ── */}
+        <section>
+          <SectionHeading title="Dialogue UI" />
+          <DialogueUICard
+            dialogue={settings.dialogue}
+            onChange={d => setSettings(s => ({ ...s, dialogue: d }))}
+          />
         </section>
 
         {/* ── Audio ── */}
@@ -1253,6 +1279,164 @@ function AutoResizeTextarea({
       placeholder={placeholder}
       className={`w-full resize-none overflow-hidden rounded border px-3 py-2 text-sm leading-relaxed text-gray-800 focus:outline-none ${borderClass}`}
     />
+  );
+}
+
+// ── Dialogue UI ───────────────────────────────────────────────────────────
+
+function DialogueUICard({ dialogue, onChange }: { dialogue: DialogueConfig; onChange: (d: DialogueConfig) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function upload(file: File) {
+    setUploading(true);
+    setUploadErr('');
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/admin/upload-dialogue-divider', { method: 'POST', body: fd });
+    if (res.ok) {
+      const { src } = await res.json() as { src: string };
+      onChange({ ...dialogue, divider: { ...dialogue.divider, src } });
+    } else {
+      const body = await res.json().catch(() => ({})) as { error?: string };
+      setUploadErr(body.error ?? 'Upload failed');
+    }
+    setUploading(false);
+  }
+
+  const divFilename = dialogue.divider.src ? dialogue.divider.src.split('/').pop() : null;
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+
+      {/* Name */}
+      <div className="bg-gray-50 px-5 py-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">Name</span>
+      </div>
+
+      <div className="flex items-center justify-between px-5 py-4">
+        <FieldLabel>Text</FieldLabel>
+        <input
+          value={dialogue.name.text}
+          onChange={e => onChange({ ...dialogue, name: { ...dialogue.name, text: e.target.value } })}
+          spellCheck={false}
+          className="w-48 rounded border border-gray-200 px-3 py-1.5 text-sm text-gray-800 focus:border-gray-400 focus:outline-none"
+        />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-6 px-5 py-4">
+        <div className="flex items-center gap-2">
+          <FieldLabel>Size</FieldLabel>
+          <input
+            type="number" min={10} max={72} step={1}
+            value={dialogue.name.fontSize}
+            onChange={e => onChange({ ...dialogue, name: { ...dialogue.name, fontSize: Number(e.target.value) } })}
+            className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
+          <span className="text-xs text-gray-400">px</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <FieldLabel>Opacity</FieldLabel>
+          <input
+            type="range" min={0} max={1} step={0.01}
+            value={dialogue.name.opacity}
+            onChange={e => onChange({ ...dialogue, name: { ...dialogue.name, opacity: Number(e.target.value) } })}
+            className="w-24 accent-gray-700"
+          />
+          <span className="w-8 text-right font-mono text-xs text-gray-500">{dialogue.name.opacity.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="bg-gray-50 px-5 py-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">Divider</span>
+      </div>
+
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>
+          <FieldLabel>Image</FieldLabel>
+          <p className="text-xs text-gray-400">PNG, SVG, WebP, JPG.</p>
+          {divFilename && <p className="mt-0.5 font-mono text-xs text-gray-500">{divFilename}</p>}
+          {uploadErr && <p className="mt-1 text-xs text-red-500">{uploadErr}</p>}
+        </div>
+        <div className="flex items-center gap-2 shrink-0 ml-6">
+          <input ref={fileRef} type="file" accept=".png,.svg,.webp,.jpg,.jpeg,image/*" className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ''; }} />
+          <button onClick={() => fileRef.current?.click()} disabled={uploading}
+            className="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors">
+            {uploading ? 'Uploading…' : dialogue.divider.src ? 'Replace' : 'Upload'}
+          </button>
+          {dialogue.divider.src && (
+            <button onClick={() => onChange({ ...dialogue, divider: { ...dialogue.divider, src: '' } })}
+              className="rounded border border-red-100 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 transition-colors">
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-6 px-5 py-4">
+        <div className="flex items-center gap-2">
+          <FieldLabel>Width</FieldLabel>
+          <input
+            type="number" min={4} max={400} step={2}
+            value={dialogue.divider.width}
+            onChange={e => onChange({ ...dialogue, divider: { ...dialogue.divider, width: Number(e.target.value) } })}
+            className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
+          <span className="text-xs text-gray-400">px</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <FieldLabel>Opacity</FieldLabel>
+          <input
+            type="range" min={0} max={1} step={0.01}
+            value={dialogue.divider.opacity}
+            onChange={e => onChange({ ...dialogue, divider: { ...dialogue.divider, opacity: Number(e.target.value) } })}
+            className="w-24 accent-gray-700"
+          />
+          <span className="w-8 text-right font-mono text-xs text-gray-500">{dialogue.divider.opacity.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="bg-gray-50 px-5 py-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">Dialogue</span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-6 px-5 py-4">
+        <div className="flex items-center gap-2">
+          <FieldLabel>Size</FieldLabel>
+          <input
+            type="number" min={10} max={48} step={1}
+            value={dialogue.body.fontSize}
+            onChange={e => onChange({ ...dialogue, body: { ...dialogue.body, fontSize: Number(e.target.value) } })}
+            className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
+          <span className="text-xs text-gray-400">px</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <FieldLabel>Line height</FieldLabel>
+          <input
+            type="number" min={0.8} max={3} step={0.05}
+            value={dialogue.body.lineHeight}
+            onChange={e => onChange({ ...dialogue, body: { ...dialogue.body, lineHeight: Number(e.target.value) } })}
+            className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <FieldLabel>Opacity</FieldLabel>
+          <input
+            type="range" min={0} max={1} step={0.01}
+            value={dialogue.body.opacity}
+            onChange={e => onChange({ ...dialogue, body: { ...dialogue.body, opacity: Number(e.target.value) } })}
+            className="w-24 accent-gray-700"
+          />
+          <span className="w-8 text-right font-mono text-xs text-gray-500">{dialogue.body.opacity.toFixed(2)}</span>
+        </div>
+      </div>
+
+    </div>
   );
 }
 

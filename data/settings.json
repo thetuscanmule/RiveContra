@@ -63,6 +63,24 @@
   "pauseDiceRoll": 8000,
   "pauseBeforeResults": 2000,
   "pauseUiFade": 400,
+  "dialogueFade": 600,
+  "dialogue": {
+    "name": {
+      "text": "SkullGuy",
+      "fontSize": 28,
+      "opacity": 0.6
+    },
+    "body": {
+      "fontSize": 20,
+      "opacity": 0.7,
+      "lineHeight": 1.2
+    },
+    "divider": {
+      "src": "/dialogue-divider.png",
+      "width": 96,
+      "opacity": 0.25
+    }
+  },
   "riveScale": 0.9,
   "texture": {
     "src": "/bg-texture.svg",
