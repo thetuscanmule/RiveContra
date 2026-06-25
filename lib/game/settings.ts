@@ -35,8 +35,10 @@ export const SETTINGS = data as {
   pauseBeforeResults:   number;
   pauseUiFade:          number;
   dialogueFade:         number;
+  buttonMinWidth:       number;
+  startScreen:          { scale: number; scaleMobile: number };
   dialogue:             DialogueConfig;
-  riveScale:            number;
+  riveScale:            { scale: number; scaleMobile: number };
   texture:              TextureConfig;
   audio:                { phases: Record<string, AudioClip>; ui: { click: AudioClip } };
 };

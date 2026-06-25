@@ -9,16 +9,17 @@ type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; dialogue: DialogueConfig; riveScale: number; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; buttonMinWidth: number; startScreen: { scale: number; scaleMobile: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: 1.0, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, buttonMinWidth: 200, startScreen: { scale: 1.0, scaleMobile: 1.0 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
+  const [tab,        setTab]        = useState<'ui' | 'gameplay'>('ui');
   const statusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -149,11 +150,19 @@ export default function AdminPage() {
       {/* ── Sticky header ── */}
       <div className="sticky top-0 z-10 border-b border-gray-200 bg-white shadow-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">Narrative Strings</h1>
-            <p className="text-xs text-gray-400">
-              Edits write to <code className="font-mono">/data/*.json</code> — commit after saving.
-            </p>
+          {/* Tab switcher */}
+          <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-1">
+            {(['ui', 'gameplay'] as const).map(t => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+                  tab === t ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {t === 'ui' ? 'UI' : 'Gameplay'}
+              </button>
+            ))}
           </div>
           <div className="flex items-center gap-4">
             {status === 'error' && <p className="text-xs text-red-600">{errorMsg}</p>}
@@ -170,6 +179,9 @@ export default function AdminPage() {
       </div>
 
       <div className="mx-auto max-w-5xl space-y-12 px-6 py-10">
+
+      {/* ══ UI TAB ══════════════════════════════════════════════════════════ */}
+      {tab === 'ui' && <>
 
         {/* ── Background ── */}
         <section>
@@ -235,6 +247,128 @@ export default function AdminPage() {
             ))}
           </div>
         </section>
+
+        {/* ── Buttons ── */}
+        <section>
+          <SectionHeading title="Buttons" />
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Min width</FieldLabel>
+                <p className="text-xs text-gray-400">Minimum width of every hex button in px.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={80} max={600} step={4}
+                  value={settings.buttonMinWidth}
+                  onChange={e => setSettings(s => ({ ...s, buttonMinWidth: Number(e.target.value) }))}
+                  className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">px</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Rive Canvas ── */}
+        <section>
+          <SectionHeading title="Rive Canvas" />
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <FieldLabel>Desktop scale</FieldLabel>
+                  <p className="text-xs text-gray-400">Base size is 480px × scale.</p>
+                </div>
+                <span className="font-mono text-xs text-gray-500 shrink-0 ml-6">{settings.riveScale.scale.toFixed(2)}×</span>
+              </div>
+              <input
+                type="range" min={0.3} max={2} step={0.01}
+                value={settings.riveScale.scale}
+                onChange={e => setSettings(s => ({ ...s, riveScale: { ...s.riveScale, scale: Number(e.target.value) } }))}
+                className="w-full accent-gray-700"
+              />
+            </div>
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <FieldLabel>Mobile scale</FieldLabel>
+                  <p className="text-xs text-gray-400">Applied on screens narrower than 768px.</p>
+                </div>
+                <span className="font-mono text-xs text-gray-500 shrink-0 ml-6">{settings.riveScale.scaleMobile.toFixed(2)}×</span>
+              </div>
+              <input
+                type="range" min={0.3} max={2} step={0.01}
+                value={settings.riveScale.scaleMobile}
+                onChange={e => setSettings(s => ({ ...s, riveScale: { ...s.riveScale, scaleMobile: Number(e.target.value) } }))}
+                className="w-full accent-gray-700"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Start Screen ── */}
+        <section>
+          <SectionHeading title="Start Screen" />
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <FieldLabel>Logo + button scale</FieldLabel>
+                  <p className="text-xs text-gray-400">Scales the logo and Enter button as a single block.</p>
+                </div>
+                <span className="font-mono text-xs text-gray-500 shrink-0 ml-6">{settings.startScreen.scale.toFixed(2)}×</span>
+              </div>
+              <input
+                type="range" min={0.5} max={2} step={0.01}
+                value={settings.startScreen.scale}
+                onChange={e => setSettings(s => ({ ...s, startScreen: { ...s.startScreen, scale: Number(e.target.value) } }))}
+                className="w-full accent-gray-700"
+              />
+            </div>
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <FieldLabel>Mobile scale</FieldLabel>
+                  <p className="text-xs text-gray-400">Applied on screens narrower than 768px.</p>
+                </div>
+                <span className="font-mono text-xs text-gray-500 shrink-0 ml-6">{(settings.startScreen.scaleMobile ?? 1).toFixed(2)}×</span>
+              </div>
+              <input
+                type="range" min={0.5} max={2} step={0.01}
+                value={settings.startScreen.scaleMobile ?? 1}
+                onChange={e => setSettings(s => ({ ...s, startScreen: { ...s.startScreen, scaleMobile: Number(e.target.value) } }))}
+                className="w-full accent-gray-700"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Dialogue UI ── */}
+        <section>
+          <SectionHeading title="Dialogue UI" />
+          <DialogueUICard
+            dialogue={settings.dialogue}
+            onChange={d => setSettings(s => ({ ...s, dialogue: d }))}
+          />
+        </section>
+
+        {/* ── UI Sounds ── */}
+        <section>
+          <SectionHeading title="UI Sounds" />
+          <AudioPhaseCard
+            phaseKey="ui-click"
+            label="Button click"
+            note="Plays on every HexButton press"
+            clip={settings.audio.ui?.click ?? { src: '', volume: 1.0, loop: false }}
+            onChange={clip => setSettings(s => ({ ...s, audio: { ...s.audio, ui: { ...s.audio.ui, click: clip } } }))}
+          />
+        </section>
+
+      </>}
+
+      {/* ══ GAMEPLAY TAB ════════════════════════════════════════════════════ */}
+      {tab === 'gameplay' && <>
 
         {/* ── Rive Inputs ── */}
         <section>
@@ -340,22 +474,6 @@ export default function AdminPage() {
             </div>
 
             {/* Rive canvas scale */}
-            <div className="flex items-center justify-between px-5 py-4">
-              <div>
-                <FieldLabel>Rive canvas scale</FieldLabel>
-                <p className="text-xs text-gray-400">Multiplier on the base 480 × 480 canvas. 1.5 = 720 × 720.</p>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0 ml-6">
-                <input
-                  type="number" min={0.25} max={4} step={0.05}
-                  value={settings.riveScale}
-                  onChange={e => setSettings(s => ({ ...s, riveScale: Number(e.target.value) }))}
-                  className="w-20 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
-                />
-                <span className="text-xs text-gray-400">×</span>
-              </div>
-            </div>
-
             {/* Pause before greeting */}
             <div className="flex items-center justify-between px-5 py-4">
               <div>
@@ -467,15 +585,6 @@ export default function AdminPage() {
           <GameTimeline settings={settings} setSettings={setSettings} />
         </section>
 
-        {/* ── Dialogue UI ── */}
-        <section>
-          <SectionHeading title="Dialogue UI" />
-          <DialogueUICard
-            dialogue={settings.dialogue}
-            onChange={d => setSettings(s => ({ ...s, dialogue: d }))}
-          />
-        </section>
-
         {/* ── Audio ── */}
         <section>
           <SectionHeading title="Audio" />
@@ -492,15 +601,6 @@ export default function AdminPage() {
               />
             ))}
           </div>
-
-          <h3 className="mt-6 mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">UI Sounds</h3>
-          <AudioPhaseCard
-            phaseKey="ui-click"
-            label="Button click"
-            note="Plays on every HexButton press"
-            clip={settings.audio.ui?.click ?? { src: '', volume: 1.0, loop: false }}
-            onChange={clip => setSettings(s => ({ ...s, audio: { ...s.audio, ui: { ...s.audio.ui, click: clip } } }))}
-          />
         </section>
 
         {/* ── Greeting ── */}
@@ -662,6 +762,8 @@ export default function AdminPage() {
 
           </div>
         </section>
+
+      </>}
 
       </div>
     </div>

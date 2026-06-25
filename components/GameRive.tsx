@@ -10,9 +10,10 @@ interface Props {
   roll:        number;           // 1–8  (active during dice scene)
   emotion:     number;           // 0=idle 1=win 2=lose
   diceOutcome: 'win' | 'fail' | null; // fires dicewin/dicefail trigger once at reveal
+  scale:       number;           // resolved desktop or mobile scale
 }
 
-export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome }: Props) {
+export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome, scale }: Props) {
   const {
     artboard, stateMachine,
     inputScene, inputJawOpen, inputRoll, inputEmotion,
@@ -46,7 +47,7 @@ export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome }: Props) 
     if (diceOutcome === 'fail' && diceFailInput) diceFailInput.fire();
   }, [diceOutcome, diceWinInput, diceFailInput]);
 
-  const size = Math.round(480 * SETTINGS.riveScale);
+  const size = Math.round(480 * scale);
   return (
     <div style={{ width: size, height: size }}>
       <RiveComponent style={{ width: '100%', height: '100%' }} />

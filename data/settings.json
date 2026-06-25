@@ -64,6 +64,11 @@
   "pauseBeforeResults": 2000,
   "pauseUiFade": 400,
   "dialogueFade": 600,
+  "buttonMinWidth": 220,
+  "startScreen": {
+    "scale": 1.2,
+    "scaleMobile": 0.8
+  },
   "dialogue": {
     "name": {
       "text": "SkullGuy",
@@ -81,7 +86,10 @@
       "opacity": 0.25
     }
   },
-  "riveScale": 0.9,
+  "riveScale": {
+    "scale": 0.8,
+    "scaleMobile": 0.6
+  },
   "texture": {
     "src": "/bg-texture.svg",
     "size": 300,

@@ -91,6 +91,15 @@ export default function Home() {
   const [isSpeaking,     setIsSpeaking]     = useState(false);
   const [isStartFading,  setIsStartFading]  = useState(false);
   const [showStartButton, setShowStartButton] = useState(true);
+  // Responsive start screen scale (switches at Tailwind's md breakpoint: 768px)
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   // optionsReady: true only after speaking has finished during 'presenting'
   // (avoids 1-frame flash of buttons at phase entry before speak() sets isSpeaking=true)
   const [optionsReady,   setOptionsReady]   = useState(false);
@@ -439,14 +448,18 @@ export default function Home() {
             pointerEvents: isStartFading ? 'none' : 'auto',
           }}
         >
-          <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-[317px] -mb-3" />
-          <HexButton onClick={handleStart}>Enter</HexButton>
+          <div style={{ transform: `scale(${isMobile ? SETTINGS.startScreen.scaleMobile : SETTINGS.startScreen.scale})`, transformOrigin: 'center center' }}
+               className="flex flex-col items-center gap-0">
+            <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-[317px] -mb-3" />
+            <HexButton onClick={handleStart}>Enter</HexButton>
+          </div>
         </div>
       )}
 
       {/* Rive canvas — always rendered so intro plays on page load */}
       <div className="relative">
-        <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} />
+        <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome}
+          scale={isMobile ? SETTINGS.riveScale.scaleMobile : SETTINGS.riveScale.scale} />
 
         {/* Results overlay */}
         {phase === 'results' && (
@@ -521,19 +534,18 @@ export default function Home() {
           }}
         >
           {encounter?.options.map((opt) => (
-            <button
+            <HexButton
               key={opt.threshold}
-              onClick={() => { playClickSound(); handleOption(opt.threshold); }}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800
-                         px-4 py-3 text-left text-sm text-gray-200
-                         hover:border-green-600 hover:bg-gray-700
-                         transition-colors flex items-center justify-between gap-4"
+              onClick={() => handleOption(opt.threshold)}
+              innerClassName="px-6 py-[11px]"
             >
-              <span>{opt.label}</span>
-              <span className="shrink-0 text-xs font-mono text-green-500">
-                {stepRange(opt.threshold)}
+              <span className="flex items-center justify-between gap-4 w-full">
+                <span>{opt.label}</span>
+                <span className="shrink-0 text-xs font-mono opacity-50 group-hover:opacity-70">
+                  {stepRange(opt.threshold)}
+                </span>
               </span>
-            </button>
+            </HexButton>
           ))}
         </div>
 
