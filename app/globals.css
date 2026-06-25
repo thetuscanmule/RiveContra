@@ -36,20 +36,24 @@ body {
 @layer components {
   .btn-hex {
     clip-path: polygon(22px 0%, calc(100% - 22px) 0%, 100% 50%, calc(100% - 22px) 100%, 22px 100%, 0% 50%);
-    transition: filter 0.15s ease, transform 0.1s ease;
+    transition: filter 0.2s ease, transform 0.1s ease;
   }
+}
 
-  /* Shadow only on the outer button wrapper, not the inner span */
-  button.btn-hex {
-    filter: drop-shadow(0 0 1px rgba(255,255,255,0.2)) drop-shadow(0 4px 14px rgba(0,0,0,0.7));
-  }
-  button.btn-hex:active {
-    transform: scale(0.97);
-    filter: drop-shadow(0 0 1px rgba(255,255,255,0.15)) drop-shadow(0 2px 8px rgba(0,0,0,0.8));
-  }
-  button.btn-hex:disabled {
-    transform: none;
-    filter: none;
-    cursor: not-allowed;
-  }
+/* Outside @layer so these win over any utility conflicts */
+button.btn-hex {
+  filter: drop-shadow(0 0 1px rgba(255,255,255,0.2)) drop-shadow(0 4px 14px rgba(0,0,0,0.7)) drop-shadow(0 0 0px rgba(212,255,62,0));
+}
+button.btn-hex:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 1px rgba(255,255,255,0.2)) drop-shadow(0 4px 14px rgba(0,0,0,0.7)) drop-shadow(0 0 40px rgba(212,255,62,0.8));
+}
+button.btn-hex:active {
+  transform: scale(0.97);
+  filter: drop-shadow(0 0 1px rgba(255,255,255,0.15)) drop-shadow(0 2px 8px rgba(0,0,0,0.8)) drop-shadow(0 0 0px rgba(212,255,62,0));
+}
+button.btn-hex:disabled {
+  transform: none;
+  filter: none;
+  cursor: not-allowed;
 }

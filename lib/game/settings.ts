@@ -31,5 +31,5 @@ export const SETTINGS = data as {
   pauseUiFade:          number;
   riveScale:            number;
   texture:              TextureConfig;
-  audio:                { phases: Record<string, AudioClip> };
+  audio:                { phases: Record<string, AudioClip>; ui: { click: AudioClip } };
 };

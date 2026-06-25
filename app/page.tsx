@@ -11,6 +11,7 @@ import { ENCOUNTERS } from '@/lib/game/encounters';
 import { GREETING, PRE_ROLL_LINES, REACTION_LINES } from '@/lib/game/reactionLines';
 import { pickEncounter, resolveRoll, pickReaction, pickLine, stepRange } from '@/lib/game/engine';
 import { SETTINGS } from '@/lib/game/settings';
+import { playClickSound } from '@/lib/game/playClickSound';
 import type { Encounter, RollResult } from '@/lib/game/types';
 
 // ─── Audio constants ────────────────────────────────────────────────────────
@@ -395,7 +396,7 @@ export default function Home() {
     <img
       src="/RiveXContra.svg"
       alt="Rive × Contra"
-      className="fixed bottom-6 left-1/2 z-20 h-6 -translate-x-1/2 opacity-60 transition-opacity duration-150 hover:opacity-100"
+      className="fixed bottom-7 left-1/2 z-20 h-[28px] -translate-x-1/2 opacity-60 transition-opacity duration-150 hover:opacity-100"
     />
     <main className="relative z-10 min-h-screen flex flex-col items-center justify-center gap-6 p-8">
 
@@ -425,7 +426,7 @@ export default function Home() {
               pointerEvents: isStartFading ? 'none' : 'auto',
             }}
           >
-            <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-72 -mb-2" />
+            <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-[317px] -mb-3" />
             <HexButton onClick={handleStart}>Enter</HexButton>
           </div>
         )}
@@ -443,7 +444,7 @@ export default function Home() {
               {streak === 1 ? 'encounter survived' : 'encounters survived'}
             </p>
             <button
-              onClick={handleReplay}
+              onClick={() => { playClickSound(); handleReplay(); }}
               className="mt-2 rounded-lg bg-green-700 px-8 py-3 font-semibold
                          text-white hover:bg-green-600 transition-colors"
             >
@@ -473,7 +474,7 @@ export default function Home() {
               {encounter.options.map((opt) => (
                 <button
                   key={opt.threshold}
-                  onClick={() => handleOption(opt.threshold)}
+                  onClick={() => { playClickSound(); handleOption(opt.threshold); }}
                   disabled={isSpeaking}
                   className="w-full rounded-lg border border-gray-700 bg-gray-800
                              px-4 py-3 text-left text-sm text-gray-200

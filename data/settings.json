@@ -70,6 +70,13 @@
     "opacity": 0.3
   },
   "audio": {
+    "ui": {
+      "click": {
+        "src": "/audio/ui-click.mp3",
+        "volume": 0.2,
+        "loop": false
+      }
+    },
     "phases": {
       "start": {
         "src": "",
