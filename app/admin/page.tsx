@@ -7,16 +7,17 @@ import { AudioClip, CursorConfig, CursorSlot, DialogueConfig, GradientTheme, Rin
 
 type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
-type Reactions = { greeting: string; preRoll: string[]; affirmative: string[]; negative: string[] };
+type AffirmativePools = { safe: string[]; medium: string[]; risky: string[] };
+type Reactions = { greeting: string[]; preRoll: string[]; affirmative: AffirmativePools; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; layout: { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number }; buttonMinWidth: number; startScreen: { scale: number; scaleMobile: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; smoothing: number; speechSpeed: number; pauseBeforeGreeting: number; pauseDiceReveal: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; luck: number; layout: { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number }; buttonMinWidth: number; startScreen: { scale: number; scaleMobile: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip } } };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
-  const [reactions,  setReactions]  = useState<Reactions>({ greeting: '', preRoll: [], affirmative: [], negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, startScreen: { scale: 1.0, scaleMobile: 1.0 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
+  const [reactions,  setReactions]  = useState<Reactions>({ greeting: [], preRoll: [], affirmative: { safe: [], medium: [], risky: [] }, negative: [] });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, smoothing: 0.95, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, luck: 0, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, startScreen: { scale: 1.0, scaleMobile: 1.0 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const [tab,        setTab]        = useState<'ui' | 'gameplay'>('ui');
@@ -98,8 +99,12 @@ export default function AdminPage() {
 
   // ── Reaction helpers ──
 
-  function setGreeting(v: string) {
-    setReactions(prev => ({ ...prev, greeting: v }));
+  function setGreeting(i: number, v: string) {
+    setReactions(prev => { const g = [...prev.greeting]; g[i] = v; return { ...prev, greeting: g }; });
+  }
+  function addGreeting()         { setReactions(prev => ({ ...prev, greeting: [...prev.greeting, ''] })); }
+  function removeGreeting(i: number) {
+    setReactions(prev => ({ ...prev, greeting: prev.greeting.filter((_, idx) => idx !== i) }));
   }
 
   function setPreRoll(i: number, v: string) {
@@ -113,10 +118,10 @@ export default function AdminPage() {
     setReactions(prev => ({ ...prev, preRoll: prev.preRoll.filter((_, idx) => idx !== i) }));
   }
 
-  function setAffirmative(i: number, v: string) {
+  function setAffirmative(pool: keyof AffirmativePools, i: number, v: string) {
     setReactions(prev => {
-      const a = [...prev.affirmative]; a[i] = v;
-      return { ...prev, affirmative: a };
+      const a = [...prev.affirmative[pool]]; a[i] = v;
+      return { ...prev, affirmative: { ...prev.affirmative, [pool]: a } };
     });
   }
 
@@ -127,11 +132,13 @@ export default function AdminPage() {
     });
   }
 
-  function addAffirmative() { setReactions(prev => ({ ...prev, affirmative: [...prev.affirmative, ''] })); }
-  function addNegative()    { setReactions(prev => ({ ...prev, negative:    [...prev.negative,    ''] })); }
+  function addAffirmative(pool: keyof AffirmativePools) {
+    setReactions(prev => ({ ...prev, affirmative: { ...prev.affirmative, [pool]: [...prev.affirmative[pool], ''] } }));
+  }
+  function addNegative() { setReactions(prev => ({ ...prev, negative: [...prev.negative, ''] })); }
 
-  function removeAffirmative(i: number) {
-    setReactions(prev => ({ ...prev, affirmative: prev.affirmative.filter((_, idx) => idx !== i) }));
+  function removeAffirmative(pool: keyof AffirmativePools, i: number) {
+    setReactions(prev => ({ ...prev, affirmative: { ...prev.affirmative, [pool]: prev.affirmative[pool].filter((_, idx) => idx !== i) } }));
   }
   function removeNegative(i: number) {
     setReactions(prev => ({ ...prev, negative: prev.negative.filter((_, idx) => idx !== i) }));
@@ -535,7 +542,52 @@ export default function AdminPage() {
               <p className="mt-1 text-xs text-gray-400">ElevenLabs playback speed. 0.7 is slower and more dramatic. 1.0 is natural pace.</p>
             </div>
 
-            {/* Rive canvas scale */}
+            {/* Luck */}
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between mb-2">
+                <FieldLabel>Luck bonus</FieldLabel>
+                <span className="font-mono text-xs text-gray-500">{settings.luck}</span>
+              </div>
+              <input
+                type="range" min={0} max={4} step={0.5}
+                value={settings.luck}
+                onChange={e => setSettings(s => ({ ...s, luck: Number(e.target.value) }))}
+                className="w-full accent-gray-700"
+              />
+              <details className="mt-3 rounded-lg border border-gray-100 bg-gray-50 text-xs text-gray-600 open:pb-1">
+                <summary className="cursor-pointer select-none list-none px-3 py-2 font-medium text-gray-700 hover:text-gray-900 [&::-webkit-details-marker]:hidden after:content-['_↓'] open:after:content-['_↑']">
+                  How luck works
+                </summary>
+                <div className="px-3 pb-3 pt-1 space-y-2.5">
+                  <p>Each encounter the player faces is assigned an index starting at 0. A <strong>luck bonus</strong> is added to the raw d8 roll (capped at 8) for the first three encounters only, then drops to zero.</p>
+                  <p className="font-mono text-gray-500">bonus = round(luck × max(0, 1 − index / 3))</p>
+                  <table className="w-full text-center border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="py-1 text-left font-medium text-gray-500">Encounter</th>
+                        <th className="py-1 font-medium text-gray-500">Multiplier</th>
+                        <th className="py-1 font-medium text-gray-500">+Bonus</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[0, 1, 2, 3].map(idx => {
+                        const mult = idx >= 3 ? 0 : 1 - idx / 3;
+                        const bonus = Math.round(settings.luck * mult);
+                        return (
+                          <tr key={idx} className="border-b border-gray-100 last:border-0">
+                            <td className="py-1 text-left text-gray-500">{idx === 0 ? '1st' : idx === 1 ? '2nd' : idx === 2 ? '3rd' : '4th+'}</td>
+                            <td className="py-1 text-gray-500">{(mult * 100).toFixed(0)}%</td>
+                            <td className={`py-1 font-semibold ${bonus > 0 ? 'text-green-600' : 'text-gray-400'}`}>+{bonus}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  <p className="text-gray-400">The bonus is added before comparing against the threshold, so a +2 on a 1d8 roll of 5 becomes 7. The result is capped at 8.</p>
+                </div>
+              </details>
+            </div>
+
             {/* Pause before greeting */}
             <div className="flex items-center justify-between px-5 py-4">
               <div>
@@ -668,11 +720,22 @@ export default function AdminPage() {
         {/* ── Greeting ── */}
         <section>
           <SectionHeading title="Greeting" />
-          <AutoResizeTextarea
-            value={reactions.greeting}
-            onChange={setGreeting}
-            placeholder="Opening line spoken when the game starts"
-          />
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs text-gray-400">One line is picked at random each run.</p>
+            <button onClick={addGreeting} className="text-xs text-gray-400 hover:text-gray-700">+ Add</button>
+          </div>
+          <ul className="space-y-2">
+            {reactions.greeting.map((line, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <AutoResizeTextarea
+                  value={line}
+                  onChange={v => setGreeting(i, v)}
+                  placeholder="Opening line…"
+                />
+                <button onClick={() => removeGreeting(i)} className="mt-2.5 shrink-0 text-sm text-red-300 hover:text-red-500">×</button>
+              </li>
+            ))}
+          </ul>
         </section>
 
         {/* ── Encounters ── */}
@@ -778,28 +841,39 @@ export default function AdminPage() {
         {/* ── Reaction Lines ── */}
         <section>
           <SectionHeading title="Reaction Lines" />
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 
-            {/* Affirmative */}
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <FieldLabel>Affirmative ({reactions.affirmative.length})</FieldLabel>
-                <button onClick={addAffirmative} className="text-xs text-gray-400 hover:text-gray-700">+ Add</button>
-              </div>
-              <ul className="space-y-2">
-                {reactions.affirmative.map((line, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <AutoResizeTextarea
-                      value={line}
-                      onChange={v => setAffirmative(i, v)}
-                      placeholder="Success reaction line…"
-                      borderClass="border-green-200 focus:border-green-400"
-                    />
-                    <button onClick={() => removeAffirmative(i)} className="mt-2.5 shrink-0 text-sm text-red-300 hover:text-red-500">×</button>
-                  </li>
-                ))}
-              </ul>
+          {/* Affirmative — three pools by choice risk */}
+          <div className="mb-6">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Affirmative — by choice</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {([ ['safe', 'Choice 1 — Safe', 'border-green-200 focus:border-green-400'],
+                  ['medium', 'Choice 2 — Medium', 'border-yellow-200 focus:border-yellow-400'],
+                  ['risky', 'Choice 3 — Risky', 'border-orange-200 focus:border-orange-400'],
+              ] as const).map(([pool, label, borderClass]) => (
+                <div key={pool} className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <FieldLabel>{label} ({reactions.affirmative[pool].length})</FieldLabel>
+                    <button onClick={() => addAffirmative(pool)} className="text-xs text-gray-400 hover:text-gray-700">+ Add</button>
+                  </div>
+                  <ul className="space-y-2">
+                    {reactions.affirmative[pool].map((line, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <AutoResizeTextarea
+                          value={line}
+                          onChange={v => setAffirmative(pool, i, v)}
+                          placeholder="Success line…"
+                          borderClass={borderClass}
+                        />
+                        <button onClick={() => removeAffirmative(pool, i)} className="mt-2.5 shrink-0 text-sm text-red-300 hover:text-red-500">×</button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
 
             {/* Negative */}
             <div>

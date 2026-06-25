@@ -8,8 +8,8 @@ import { CustomCursor } from '@/components/CustomCursor';
 import { HexButton } from '@/components/HexButton';
 import type { ThemeKey } from '@/lib/game/settings';
 import { ENCOUNTERS } from '@/lib/game/encounters';
-import { GREETING, PRE_ROLL_LINES, REACTION_LINES } from '@/lib/game/reactionLines';
-import { pickEncounter, resolveRoll, pickReaction, pickLine, stepRange } from '@/lib/game/engine';
+import { GREETING_LINES, PRE_ROLL_LINES, REACTION_LINES } from '@/lib/game/reactionLines';
+import { pickEncounter, resolveRoll, pickReaction, pickLine, stepRange, luckBonusForTurn } from '@/lib/game/engine';
 import { SETTINGS } from '@/lib/game/settings';
 import { playClickSound } from '@/lib/game/playClickSound';
 import type { Encounter, RollResult } from '@/lib/game/types';
@@ -120,7 +120,9 @@ export default function Home() {
   const streakRef       = useRef(0);
   const usedIdsRef      = useRef<Set<string>>(new Set());
   // Track last pre-roll line to avoid immediate repeats
-  const lastPreRollRef  = useRef('');
+  const lastPreRollRef    = useRef('');
+  const lastGreetingRef   = useRef('');
+  const encounterCountRef = useRef(0);
   // Phase audio
   const phaseAudioRef   = useRef<AudioBufferSourceNode | null>(null);
   const audioCacheRef   = useRef(new Map<string, AudioBuffer>());
@@ -245,8 +247,10 @@ export default function Home() {
   useEffect(() => {
     if (phase !== 'greeting') return;
     let active = true;
-    setCurrentDialogue(GREETING);
-    speak(GREETING).then(() => {
+    const greeting = pickLine(lastGreetingRef.current, GREETING_LINES);
+    lastGreetingRef.current = greeting;
+    setCurrentDialogue(greeting);
+    speak(greeting).then(() => {
       if (!active) return;
       const enc = pickEncounter(0, new Set(), ENCOUNTERS);
       setEncounter(enc);
@@ -278,7 +282,7 @@ export default function Home() {
     const doneTimer   = setTimeout(() => {
       const result = rollResultRef.current!;
       const kind   = result.success ? 'affirmative' : 'negative';
-      const reaction = pickReaction(kind, lastReaction, REACTION_LINES);
+      const reaction = pickReaction(kind, result.choiceIndex, lastReaction, REACTION_LINES);
       setReactionLine(reaction);
       setLastReaction(reaction);
       setPhase('reacting');
@@ -363,8 +367,10 @@ export default function Home() {
     setTimeout(() => setPhase('greeting'), SETTINGS.pauseBeforeGreeting);
   };
 
-  const handleOption = (threshold: number) => {
-    const result = resolveRoll(threshold);
+  const handleOption = (threshold: number, choiceIndex: number) => {
+    const bonus  = luckBonusForTurn(SETTINGS.luck, encounterCountRef.current);
+    encounterCountRef.current += 1;
+    const result = { ...resolveRoll(threshold, bonus), choiceIndex };
     rollResultRef.current = result;
     setRollResult(result);
     setPhase('resolving');
@@ -380,7 +386,8 @@ export default function Home() {
     setLastReaction('');
     setEncounter(null);
     setUsedIds(new Set());
-    usedIdsRef.current = new Set();
+    usedIdsRef.current      = new Set();
+    encounterCountRef.current = 0;
     setIsStartFading(false);
     setShowStartButton(false); // skip showing the begin button on replay
     setPhase('start');
@@ -543,10 +550,10 @@ export default function Home() {
             pointerEvents: (phase === 'presenting' && optionsReady) ? 'auto' : 'none',
           }}
         >
-          {encounter?.options.map((opt) => (
+          {encounter?.options.map((opt, i) => (
             <HexButton
               key={opt.threshold}
-              onClick={() => handleOption(opt.threshold)}
+              onClick={() => handleOption(opt.threshold, i)}
               innerClassName="px-6 py-[11px]"
             >
               <span className="flex items-center justify-between gap-4 w-full">

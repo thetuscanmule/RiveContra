@@ -64,6 +64,7 @@
   "pauseBeforeResults": 2000,
   "pauseUiFade": 400,
   "dialogueFade": 600,
+  "luck": 4,
   "layout": {
     "blockOffset": -5,
     "blockOffsetMobile": -10,

@@ -23,11 +23,18 @@ export function pickEncounter(
   return rand(tierFallback.length > 0 ? tierFallback : pool);
 }
 
-/** Roll 1d8 and compare against threshold. */
-export function resolveRoll(threshold: number): RollResult {
-  const roll    = 1 + Math.floor(Math.random() * 8);
+/** Roll 1d8, apply luck bonus (clamped to 8), then compare against threshold. choiceIndex added by caller. */
+export function resolveRoll(threshold: number, luckBonus = 0): Omit<RollResult, 'choiceIndex'> {
+  const raw     = 1 + Math.floor(Math.random() * 8);
+  const roll    = Math.min(8, raw + luckBonus);
   const success = roll >= threshold;
   return { roll, success, threshold, steps: success ? advanceSteps(threshold) : 0 };
+}
+
+/** Luck bonus for a given encounter index (0-based). Full on enc 0, gone by enc 3. */
+export function luckBonusForTurn(luck: number, encounterIndex: number): number {
+  if (encounterIndex >= 3) return 0;
+  return Math.round(luck * (1 - encounterIndex / 3));
 }
 
 /**
@@ -51,16 +58,21 @@ export function stepRange(threshold: number): string {
   return `+${base}–${base + 1} steps`;
 }
 
+const AFFIRMATIVE_POOLS: Array<keyof ReactionLines['affirmative']> = ['safe', 'medium', 'risky'];
+
 /**
- * Pick a reaction line of the given kind, avoiding an immediate repeat.
- * If the pool has only one entry, it will repeat.
+ * Pick a reaction line, avoiding an immediate repeat.
+ * On success, choiceIndex (0/1/2) selects the safe/medium/risky pool.
  */
 export function pickReaction(
   kind: 'affirmative' | 'negative',
+  choiceIndex: number,
   lastLine: string,
   lines: ReactionLines,
 ): string {
-  return pickLine(lastLine, lines[kind]);
+  if (kind === 'negative') return pickLine(lastLine, lines.negative);
+  const key = AFFIRMATIVE_POOLS[choiceIndex] ?? 'medium';
+  return pickLine(lastLine, lines.affirmative[key]);
 }
 
 /** Pick any line from a string pool, avoiding an immediate repeat. */

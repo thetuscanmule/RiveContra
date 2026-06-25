@@ -1,5 +1,10 @@
 {
-  "greeting": "Welcome... mortal. You dare enter my domain? Hm. Let us see how long that nerve holds.",
+  "greeting": [
+    "Welcome... mortal. You dare enter my domain? Hm. Let us see how long that nerve holds.",
+    "Ah. Another one. They always look so confident at the door.",
+    "You step in as though you belong here. Interesting. Let us test that theory.",
+    "The dungeon has been waiting. It is patient. Are you?"
+  ],
   "preRoll": [
     "The bones decide...",
     "Let us see what fate has in store.",
@@ -8,18 +13,27 @@
     "The dice remember nothing. Pity you do.",
     "This moment has always been coming."
   ],
-  "affirmative": [
-    "Not bad, mortal. You may yet surprise me.",
-    "Fortune nods… for now. Do not grow comfortable.",
-    "Luck is a fickle mistress — but she smiles today.",
-    "You live. Interesting. Let's see if that continues.",
-    "Ha. Even a blind soul finds the path sometimes.",
-    "Mmm. I begin to wonder if you have a death wish… or a gift."
-  ],
+  "affirmative": {
+    "safe": [
+      "The cautious path. Sensible. Boring… but sensible.",
+      "Fortune nods… for now. Do not grow comfortable.",
+      "You live. Interesting. Let's see if that continues."
+    ],
+    "medium": [
+      "Not bad, mortal. You may yet surprise me.",
+      "Luck is a fickle mistress — but she smiles today.",
+      "Ha. Even a blind soul finds the path sometimes."
+    ],
+    "risky": [
+      "Mmm. I begin to wonder if you have a death wish… or a gift.",
+      "Bold. Reckless. Alive — for now.",
+      "The dice rewarded your audacity. Do not make a habit of it."
+    ]
+  },
   "negative": [
-    "Ah. There it is. Every run ends eventually — yours just ended here.",
-    "The dice remember what you forget: nothing lasts.",
-    "A valiant effort. Truly. But the dungeon takes all, in the end.",
-    "And so the bones fall silent. As they always do."
+    "Ha ha ha.. Ah. There it is. Every run ends eventually — yours just ended here.",
+    "Ha ha ha.. The dice remember what you forget: nothing lasts.",
+    "Ha ha ha.. A valiant effort. Truly. But the dungeon takes all, in the end.",
+    "Ha ha ha.. And so the bones fall silent. As they always do."
   ]
 }
