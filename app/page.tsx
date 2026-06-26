@@ -584,83 +584,69 @@ export default function Home() {
         </div>
       )}
 
-      {/* Results overlay — full-screen, sits above everything */}
+      {/* Results / Leaderboard overlay — single overlay, content toggles */}
       {phase === 'results' && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8">
 
-          {/* Leaderboard link — top right */}
-          <button
-            onClick={() => { playClickSound(); handleOpenLeaderboard(); }}
-            className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80 bg-transparent border-none cursor-pointer"
-          >
-            Leaderboard
-          </button>
+          {/* Top-right action */}
+          {!showLeaderboard ? (
+            <button
+              onClick={() => { playClickSound(); handleOpenLeaderboard(); }}
+              className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80 bg-transparent border-none cursor-pointer"
+            >
+              Leaderboard
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowLeaderboard(false)}
+              className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80 bg-transparent border-none cursor-pointer"
+            >
+              ← Back
+            </button>
+          )}
 
-          {/* Score display */}
-          <div className="flex flex-col items-center gap-3">
-            <h2 className="font-display tracking-widest text-white/50 text-base">Score</h2>
-            <GameDivider />
-            <p className="font-display text-accent" style={{ fontSize: 'clamp(5rem, 12vw, 9rem)', lineHeight: 1 }}>
-              {streak}
-            </p>
-          </div>
+          {/* Results content */}
+          {!showLeaderboard && <>
+            <div className="flex flex-col items-center gap-3">
+              <h2 className="font-display tracking-widest text-white/50 text-base">Score</h2>
+              <GameDivider />
+              <p className="font-display text-accent" style={{ fontSize: 'clamp(5rem, 12vw, 9rem)', lineHeight: 1 }}>
+                {streak}
+              </p>
+            </div>
+            <div className="flex flex-col items-center" style={{ gap: `${SETTINGS.optionButtonGap}vh` }}>
+              <HexButton onClick={() => { playClickSound(); handleReplay(); }} style={{ minWidth: SETTINGS.resultsButtonMinWidth }}>Play Again</HexButton>
+              {SETTINGS.contraUrl && (
+                <HexButton onClick={() => window.open(SETTINGS.contraUrl, '_blank')} style={{ minWidth: SETTINGS.resultsButtonMinWidth }}>View on Contra</HexButton>
+              )}
+            </div>
+          </>}
 
-          {/* Buttons */}
-          <div className="flex flex-col items-center" style={{ gap: `${SETTINGS.optionButtonGap}vh` }}>
-            <HexButton onClick={() => { playClickSound(); handleReplay(); }} style={{ minWidth: SETTINGS.resultsButtonMinWidth }}>Play Again</HexButton>
-            {SETTINGS.contraUrl && (
-              <HexButton onClick={() => window.open(SETTINGS.contraUrl, '_blank')} style={{ minWidth: SETTINGS.resultsButtonMinWidth }}>View on Contra</HexButton>
-            )}
-          </div>
+          {/* Leaderboard content */}
+          {showLeaderboard && (
+            <div className="flex flex-col items-center gap-6 w-full max-w-sm px-6">
+              <h2 className="font-display tracking-widest text-white/50 text-base">Leaderboard</h2>
+              <GameDivider />
+              {lbLoading && <p className="font-body text-sm text-white/40 tracking-widest">Loading…</p>}
+              {lbError   && <p className="font-body text-sm text-red-400/80">{lbError}</p>}
+              {!lbLoading && !lbError && (
+                <ol className="w-full flex flex-col gap-2">
+                  {lbEntries.map((entry, i) => {
+                    const isPlayer = entry.name.toLowerCase() === playerName.toLowerCase() && entry.score === streak;
+                    return (
+                      <li key={entry.id} className={`flex items-center justify-between font-body text-sm tracking-wide px-3 py-2 ${isPlayer ? 'text-accent' : 'text-white/60'}`}>
+                        <span className="w-6 shrink-0 font-display text-white/30">{i + 1}</span>
+                        <span className="flex-1 px-3">{entry.name}</span>
+                        <span className="font-display text-lg">{entry.score}</span>
+                      </li>
+                    );
+                  })}
+                  {lbEntries.length === 0 && <p className="font-body text-sm text-white/40 text-center tracking-widest">No entries yet.</p>}
+                </ol>
+              )}
+            </div>
+          )}
 
-        </div>
-      )}
-
-      {/* Leaderboard overlay */}
-      {showLeaderboard && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
-
-          {/* Close */}
-          <button
-            onClick={() => setShowLeaderboard(false)}
-            className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80 bg-transparent border-none cursor-pointer"
-          >
-            ← Back
-          </button>
-
-          <div className="flex flex-col items-center gap-6 w-full max-w-sm px-6">
-
-            <h2 className="font-display tracking-widest text-white/50 text-base">Leaderboard</h2>
-            <GameDivider />
-
-            {lbLoading && (
-              <p className="font-body text-sm text-white/40 tracking-widest">Loading…</p>
-            )}
-            {lbError && (
-              <p className="font-body text-sm text-red-400/80">{lbError}</p>
-            )}
-            {!lbLoading && !lbError && (
-              <ol className="w-full flex flex-col gap-2">
-                {lbEntries.map((entry, i) => {
-                  const isPlayer = entry.name.toLowerCase() === playerName.toLowerCase() && entry.score === streak;
-                  return (
-                    <li
-                      key={entry.id}
-                      className={`flex items-center justify-between font-body text-sm tracking-wide px-3 py-2 rounded ${isPlayer ? 'text-accent' : 'text-white/60'}`}
-                    >
-                      <span className="w-6 shrink-0 font-display text-white/30">{i + 1}</span>
-                      <span className="flex-1 px-3">{entry.name}</span>
-                      <span className="font-display text-lg">{entry.score}</span>
-                    </li>
-                  );
-                })}
-                {lbEntries.length === 0 && (
-                  <p className="font-body text-sm text-white/40 text-center tracking-widest">No entries yet.</p>
-                )}
-              </ol>
-            )}
-
-          </div>
         </div>
       )}
 

@@ -1,14 +1,23 @@
 import { NextResponse } from 'next/server';
-import { supabase, type LeaderboardEntry } from '@/lib/supabase';
+import type { LeaderboardEntry } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const { data, error } = await supabase
-    .from('leaderboard')
-    .select('id, name, score, created_at')
-    .order('score', { ascending: false })
-    .order('created_at', { ascending: true })
-    .limit(10);
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) return NextResponse.json({ error: 'Missing env vars' }, { status: 500 });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ entries: data as LeaderboardEntry[] });
+  const res = await fetch(
+    `${url}/rest/v1/leaderboard?select=id,name,score,created_at&order=score.desc,created_at.asc&limit=10`,
+    { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' },
+  );
+
+  if (!res.ok) {
+    const body = await res.text();
+    return NextResponse.json({ error: body }, { status: res.status });
+  }
+
+  const entries = await res.json() as LeaderboardEntry[];
+  return NextResponse.json({ entries });
 }
