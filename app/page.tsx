@@ -14,6 +14,20 @@ import { SETTINGS } from '@/lib/game/settings';
 import { playClickSound } from '@/lib/game/playClickSound';
 import { replaceShortcodes } from '@/lib/game/replaceShortcodes';
 import type { Encounter, RollResult } from '@/lib/game/types';
+import { Filter } from 'bad-words';
+
+const toTitleCase = (s: string) => s.replace(/\b\w/g, c => c.toUpperCase());
+
+// ─── Shared divider — uses admin dialogue divider texture/width/opacity ─────
+function GameDivider() {
+  const { src, width, opacity } = SETTINGS.dialogue.divider;
+  return src ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt="" style={{ width, opacity }} />
+  ) : (
+    <div style={{ width, opacity }} className="border-t border-white" />
+  );
+}
 
 // ─── Audio constants ────────────────────────────────────────────────────────
 const GAIN    = 7;
@@ -395,18 +409,14 @@ export default function Home() {
   const handleSaveName = () => {
     const trimmed = nameInput.trim();
     if (!trimmed) { setNameError('Please enter a name.'); return; }
-    // bad-words check runs dynamically to avoid SSR issues
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { Filter } = require('bad-words') as { Filter: new () => { isProfane: (s: string) => boolean } };
-      if (new Filter().isProfane(trimmed)) {
-        setNameError('Please choose a different name.');
-        return;
-      }
-    } catch { /* package unavailable — skip check */ }
+    if (new Filter().isProfane(trimmed)) {
+      setNameError('Please choose a different name.');
+      return;
+    }
     setNameError('');
-    setPlayerName(trimmed);
-    localStorage.setItem('playerName', trimmed);
+    const titled = toTitleCase(trimmed);
+    setPlayerName(titled);
+    localStorage.setItem('playerName', titled);
     setTimeout(() => setPhase('greeting'), SETTINGS.pauseBeforeGreeting);
   };
 
@@ -501,32 +511,28 @@ export default function Home() {
       {/* Naming overlay */}
       {phase === 'naming' && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8">
-          <div className="flex flex-col items-center gap-6 w-full max-w-sm px-6">
+          <div className="flex flex-col items-center gap-6 w-full max-w-xl px-8">
 
-            {/* Input */}
-            <div className="w-full flex flex-col items-center gap-2">
-              <input
-                type="text"
-                value={nameInput}
-                onChange={e => { setNameInput(e.target.value.slice(0, 20)); setNameError(''); }}
-                onKeyDown={e => e.key === 'Enter' && handleSaveName()}
-                placeholder="type your name"
-                autoFocus
-                className="w-full bg-transparent border-b border-white/30 text-center font-body text-white/50 text-lg tracking-widest placeholder:text-white/30 focus:outline-none focus:border-white/60 transition-colors pb-2"
-              />
-              {nameError && (
-                <p className="font-body text-sm text-red-400/80 tracking-wide">{nameError}</p>
-              )}
-            </div>
+            {/* Label */}
+            <h3 className="font-display tracking-widest text-white" style={{ fontSize: SETTINGS.dialogue.name.fontSize, opacity: 0.5 }}>
+              type your name
+            </h3>
 
-            {/* Live name display */}
-            {nameInput.trim() && (
-              <p
-                className="font-display text-accent text-center leading-none"
-                style={{ fontSize: 'clamp(3rem, 10vw, 6rem)' }}
-              >
-                {nameInput.trim()}
-              </p>
+            <GameDivider />
+
+            {/* Large styled input */}
+            <input
+              type="text"
+              value={toTitleCase(nameInput)}
+              onChange={e => { setNameInput(e.target.value.slice(0, 16)); setNameError(''); }}
+              onKeyDown={e => e.key === 'Enter' && handleSaveName()}
+              autoFocus
+              className="w-full bg-transparent text-center font-display text-accent focus:outline-none placeholder:text-accent/30"
+              style={{ fontSize: 'clamp(3rem, 10vw, 6rem)', lineHeight: 1 }}
+            />
+
+            {nameError && (
+              <p className="font-body text-sm text-red-400/80 tracking-wide -mt-4">{nameError}</p>
             )}
 
             {/* Save button */}
@@ -552,7 +558,7 @@ export default function Home() {
           {/* Score display */}
           <div className="flex flex-col items-center gap-3">
             <h2 className="font-display tracking-widest text-white/50 text-base">Score</h2>
-            <div className="w-32 border-t border-white/20" />
+            <GameDivider />
             <p className="font-display text-accent" style={{ fontSize: 'clamp(5rem, 12vw, 9rem)', lineHeight: 1 }}>
               {streak}
             </p>
@@ -611,16 +617,7 @@ export default function Home() {
               >
                 {SETTINGS.dialogue.name.text}
               </h3>
-              {SETTINGS.dialogue.divider.src ? (
-                <img
-                  src={SETTINGS.dialogue.divider.src}
-                  alt=""
-                  style={{ width: SETTINGS.dialogue.divider.width, opacity: SETTINGS.dialogue.divider.opacity }}
-                />
-              ) : (
-                <div style={{ width: SETTINGS.dialogue.divider.width, opacity: SETTINGS.dialogue.divider.opacity }}
-                  className="border-t border-white" />
-              )}
+              <GameDivider />
               <p
                 className="font-body leading-relaxed"
                 style={{ fontSize: SETTINGS.dialogue.body.fontSize, opacity: SETTINGS.dialogue.body.opacity, lineHeight: SETTINGS.dialogue.body.lineHeight }}

@@ -31,9 +31,9 @@
     ]
   },
   "negative": [
-    "Ha ha ha.. Ah. There it is. Every run ends eventually — yours just ended here.",
-    "Ha ha ha.. The dice remember what you forget: nothing lasts.",
-    "Ha ha ha.. A valiant effort. Truly. But the dungeon takes all, in the end.",
-    "Ha ha ha.. And so the bones fall silent. As they always do."
+    "Haaa haaa [player].. Ah. There it is. Every run ends eventually — yours just ended here.",
+    "Haaa haaa [player].. The dice remember what you forget: nothing lasts.",
+    "Haaa haaa [player].. A valiant effort. Truly. But the dungeon takes all, in the end.",
+    "Haaa haaa [player]... And so the bones fall silent. As they always do."
   ]
 }
