@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@rive-app/react-webgl2": "^4.29.1",
+    "@supabase/supabase-js": "^2.108.2",
     "bad-words": "^4.0.0",
     "next": "14.2.35",
     "react": "^18",

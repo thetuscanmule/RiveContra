@@ -97,6 +97,14 @@ export default function Home() {
   const [nameInput,     setNameInput]     = useState('');
   const [nameError,     setNameError]     = useState('');
 
+  // Leaderboard
+  type LBEntry = { id: string; name: string; score: number };
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [lbEntries,       setLbEntries]       = useState<LBEntry[]>([]);
+  const [lbLoading,       setLbLoading]       = useState(false);
+  const [lbError,         setLbError]         = useState('');
+  const scoreSubmittedRef = useRef(false);
+
   // Game state
   const [phase,         setPhase]         = useState<Phase>('start');
   const [streak,        setStreak]        = useState(0);
@@ -398,6 +406,37 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  // auto-submit score and pre-fetch leaderboard when results screen appears
+  useEffect(() => {
+    if (phase !== 'results') return;
+    if (streak > 0 && !scoreSubmittedRef.current) {
+      scoreSubmittedRef.current = true;
+      fetch('/api/leaderboard/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: playerName, score: streak }),
+      }).catch(console.error);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  const fetchLeaderboard = async () => {
+    setLbLoading(true);
+    setLbError('');
+    try {
+      const res = await fetch('/api/leaderboard');
+      if (!res.ok) throw new Error('Failed to load');
+      const { entries } = await res.json() as { entries: LBEntry[] };
+      setLbEntries(entries);
+    } catch {
+      setLbError('Could not load leaderboard.');
+    } finally {
+      setLbLoading(false);
+    }
+  };
+
+  const handleOpenLeaderboard = () => { fetchLeaderboard(); setShowLeaderboard(true); };
+
   // ── Event handlers ─────────────────────────────────────────────────────────
 
   const handleStart = () => {
@@ -441,6 +480,8 @@ export default function Home() {
     setUsedIds(new Set());
     usedIdsRef.current      = new Set();
     encounterCountRef.current = 0;
+    scoreSubmittedRef.current = false;
+    setShowLeaderboard(false);
     setIsStartFading(false);
     setShowStartButton(false);
     setPhase('start');
@@ -548,12 +589,12 @@ export default function Home() {
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8">
 
           {/* Leaderboard link — top right */}
-          <a
-            href="#"
-            className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80"
+          <button
+            onClick={() => { playClickSound(); handleOpenLeaderboard(); }}
+            className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80 bg-transparent border-none cursor-pointer"
           >
             Leaderboard
-          </a>
+          </button>
 
           {/* Score display */}
           <div className="flex flex-col items-center gap-3">
@@ -572,6 +613,54 @@ export default function Home() {
             )}
           </div>
 
+        </div>
+      )}
+
+      {/* Leaderboard overlay */}
+      {showLeaderboard && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
+
+          {/* Close */}
+          <button
+            onClick={() => setShowLeaderboard(false)}
+            className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80 bg-transparent border-none cursor-pointer"
+          >
+            ← Back
+          </button>
+
+          <div className="flex flex-col items-center gap-6 w-full max-w-sm px-6">
+
+            <h2 className="font-display tracking-widest text-white/50 text-base">Leaderboard</h2>
+            <GameDivider />
+
+            {lbLoading && (
+              <p className="font-body text-sm text-white/40 tracking-widest">Loading…</p>
+            )}
+            {lbError && (
+              <p className="font-body text-sm text-red-400/80">{lbError}</p>
+            )}
+            {!lbLoading && !lbError && (
+              <ol className="w-full flex flex-col gap-2">
+                {lbEntries.map((entry, i) => {
+                  const isPlayer = entry.name.toLowerCase() === playerName.toLowerCase() && entry.score === streak;
+                  return (
+                    <li
+                      key={entry.id}
+                      className={`flex items-center justify-between font-body text-sm tracking-wide px-3 py-2 rounded ${isPlayer ? 'text-accent' : 'text-white/60'}`}
+                    >
+                      <span className="w-6 shrink-0 font-display text-white/30">{i + 1}</span>
+                      <span className="flex-1 px-3">{entry.name}</span>
+                      <span className="font-display text-lg">{entry.score}</span>
+                    </li>
+                  );
+                })}
+                {lbEntries.length === 0 && (
+                  <p className="font-body text-sm text-white/40 text-center tracking-widest">No entries yet.</p>
+                )}
+              </ol>
+            )}
+
+          </div>
         </div>
       )}
 
