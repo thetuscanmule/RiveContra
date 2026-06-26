@@ -33,6 +33,7 @@ export const SETTINGS = data as {
   speechSpeed:          number;
   contraUrl:            string;
   pauseBeforeGreeting:  number;
+  pauseBeforePreRoll:   number;
   pauseDiceReveal:      number;
   pauseDiceRoll:        number;
   pauseBeforeResults:   number;

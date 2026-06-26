@@ -162,7 +162,9 @@ export default function Home() {
   const streakRef       = useRef(0);
   const usedIdsRef      = useRef<Set<string>>(new Set());
   // Track last pre-roll line to avoid immediate repeats
-  const lastPreRollRef    = useRef('');
+  const lastPreRollRef      = useRef('');
+  // Prefetched pre-roll line + its raw key (picked during presenting so audio is cached before click)
+  const prefetchedPreRollRef = useRef<string | null>(null);
   const lastGreetingRef   = useRef('');
   const encounterCountRef = useRef(0);
   // Phase audio
@@ -304,25 +306,45 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  // presenting: speak encounter narration, then await player choice
+  // presenting: speak encounter narration, then await player choice.
+  // Also background-fetches the next pre-roll line into voiceCache so it plays instantly on click.
   useEffect(() => {
     if (phase !== 'presenting' || !encounter) return;
     const narration = replaceShortcodes(encounter.narration, playerName);
     setCurrentDialogue(narration);
     speak(narration).catch(console.error);
+
+    // Pick the pre-roll line now and warm the cache — do NOT call speak() here
+    const rawLine = pickLine(lastPreRollRef.current, PRE_ROLL_LINES);
+    const line    = replaceShortcodes(rawLine, playerName);
+    prefetchedPreRollRef.current = rawLine; // store raw key so resolving can update lastPreRollRef
+    if (!voiceCache.current.has(line)) {
+      fetch('/api/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: line, speed: SETTINGS.speechSpeed }),
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data?.audio) voiceCache.current.set(line, data.audio as string); })
+        .catch(() => {/* silent — resolving will fetch on demand if this fails */});
+    }
+
     return () => stopSpeech();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, encounter?.id]);
 
-  // resolving: speak pre-roll line concurrently while dice animation plays
+  // resolving: speak pre-roll line concurrently while dice animation plays.
+  // Uses the line prefetched during presenting (already in voiceCache) for zero-latency playback.
   useEffect(() => {
     if (phase !== 'resolving' || !rollResultRef.current) return;
-    const rawLine = pickLine(lastPreRollRef.current, PRE_ROLL_LINES);
-    const line = replaceShortcodes(rawLine, playerName);
-    lastPreRollRef.current = rawLine;
+    // Reuse prefetched line if available, otherwise pick fresh
+    const rawLine = prefetchedPreRollRef.current ?? pickLine(lastPreRollRef.current, PRE_ROLL_LINES);
+    const line    = replaceShortcodes(rawLine, playerName);
+    lastPreRollRef.current       = rawLine;
+    prefetchedPreRollRef.current = null;
     setCurrentDialogue(line);
-    speak(line).catch(console.error);
     setDiceRevealed(false);
+    const speakTimer  = setTimeout(() => speak(line).catch(console.error), SETTINGS.pauseBeforePreRoll);
     const revealTimer = setTimeout(() => setDiceRevealed(true), SETTINGS.pauseDiceReveal);
     const doneTimer   = setTimeout(() => {
       const result = rollResultRef.current!;
@@ -333,7 +355,7 @@ export default function Home() {
       setLastReaction(rawReaction);
       setPhase('reacting');
     }, SETTINGS.pauseDiceRoll);
-    return () => { clearTimeout(revealTimer); clearTimeout(doneTimer); stopSpeech(); };
+    return () => { clearTimeout(speakTimer); clearTimeout(revealTimer); clearTimeout(doneTimer); stopSpeech(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
