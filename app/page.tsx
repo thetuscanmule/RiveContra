@@ -115,6 +115,7 @@ export default function Home() {
   const [lastReaction,  setLastReaction]  = useState('');
   const [diceRevealed,  setDiceRevealed]  = useState(false);
   const [hoveredOption, setHoveredOption] = useState<number | null>(null);
+  const [hoverJaw,      setHoverJaw]      = useState(0);
 
   // Audio state
   const [jawOpen,        setJawOpen]        = useState(0);
@@ -156,6 +157,8 @@ export default function Home() {
   const sourceRef      = useRef<AudioBufferSourceNode | null>(null);
   const rafRef         = useRef<number>(0);
   const smoothedRef    = useRef(0);
+  const hoverRafRef    = useRef<number>(0);
+  const hoverJawRef    = useRef(0);
   const voiceCache     = useRef(new Map<string, string>());
   // Mirror rollResult in a ref so reacting-phase callbacks always read fresh value
   const rollResultRef   = useRef<RollResult | null>(null);
@@ -175,6 +178,25 @@ export default function Home() {
   // Keep refs in sync
   useEffect(() => { rollResultRef.current = rollResult; }, [rollResult]);
   useEffect(() => { streakRef.current = streak; },        [streak]);
+
+  // Smoothly interpolate jaw open value toward hover target (0.3 / 0.6 / 0.9 per button)
+  useEffect(() => {
+    const HOVER_JAW = [SETTINGS.hoverJaw.button0, SETTINGS.hoverJaw.button1, SETTINGS.hoverJaw.button2];
+    const target = hoveredOption !== null ? HOVER_JAW[hoveredOption] : 0;
+    cancelAnimationFrame(hoverRafRef.current);
+    function animate() {
+      hoverJawRef.current += (target - hoverJawRef.current) * SETTINGS.hoverJaw.speed;
+      if (Math.abs(hoverJawRef.current - target) < 0.002) {
+        hoverJawRef.current = target;
+        setHoverJaw(target);
+        return;
+      }
+      setHoverJaw(hoverJawRef.current);
+      hoverRafRef.current = requestAnimationFrame(animate);
+    }
+    animate();
+    return () => cancelAnimationFrame(hoverRafRef.current);
+  }, [hoveredOption]);
   useEffect(() => { usedIdsRef.current = usedIds; },      [usedIds]);
 
   // Reset optionsReady whenever a new encounter begins
@@ -549,7 +571,7 @@ export default function Home() {
     {(phase === 'start' || phase === 'results') && (
       <button
         onClick={() => { playClickSound(); handleOpenLeaderboard(); }}
-        className="fixed top-6 right-8 z-20 font-body text-sm tracking-widest text-white/40 hover:text-white/80 bg-transparent border-none cursor-pointer"
+        className="fixed top-6 right-8 z-20 font-body text-sm tracking-widest text-white/40 hover:text-white/80 bg-transparent border-none"
         style={{ opacity: showLeaderboard ? 0 : 1, transition: `opacity ${SETTINGS.pauseUiFade}ms ease-out`, pointerEvents: showLeaderboard ? 'none' : 'auto' }}
       >
         Leaderboard
@@ -564,7 +586,7 @@ export default function Home() {
       >
         <button
           onClick={() => setShowLeaderboard(false)}
-          className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80 bg-transparent border-none cursor-pointer"
+          className="absolute top-6 right-8 font-body text-sm tracking-widest text-white/40 transition-colors hover:text-white/80 bg-transparent border-none"
         >
           ← Back
         </button>
@@ -686,7 +708,7 @@ export default function Home() {
 
           {/* Row 1 — Rive canvas */}
           <div className="relative">
-            <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} flameLevel={riveFlameLevel}
+            <GameRive scene={riveScene} jawOpen={Math.max(jawOpen, hoverJaw)} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} flameLevel={riveFlameLevel}
               scale={isMobile ? SETTINGS.riveScale.scaleMobile : SETTINGS.riveScale.scale} />
 
 

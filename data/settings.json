@@ -60,6 +60,12 @@
   "pageTitle": "SkullGuy",
   "faviconSrc": "/favicon.svg",
   "smoothing": 0.95,
+  "hoverJaw": {
+    "button0": 0.3,
+    "button1": 0.6,
+    "button2": 0.9,
+    "speed": 0.12
+  },
   "speechSpeed": 0.7,
   "contraUrl": "https://contra.com/matt_buchanan_gxa8y2ro?referralExperimentNid=DEFAULT_REFERRAL_PROGRAM&referrerUsername=matt_buchanan_gxa8y2ro",
   "pauseBeforeGreeting": 1000,

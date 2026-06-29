@@ -10,12 +10,15 @@ export function CustomCursor() {
     const { default: def, hover } = SETTINGS.cursor;
     if (!def.src) return;
 
+    // Use cursor: inherit on * so children always inherit from their nearest
+    // ancestor that sets an explicit cursor — avoids !important cascade wars.
     const rules: string[] = [
-      `*, *::before, *::after { cursor: url('${def.src}') ${def.hotspotX} ${def.hotspotY}, auto !important; }`,
+      `*, *::before, *::after { cursor: inherit; }`,
+      `html { cursor: url('${def.src}') ${def.hotspotX} ${def.hotspotY}, auto; }`,
     ];
 
     if (hover.src) {
-      rules.push(`${HOVER_SELECTORS} { cursor: url('${hover.src}') ${hover.hotspotX} ${hover.hotspotY}, pointer !important; }`);
+      rules.push(`${HOVER_SELECTORS} { cursor: url('${hover.src}') ${hover.hotspotX} ${hover.hotspotY}, pointer; }`);
     }
 
     const el = document.createElement('style');
