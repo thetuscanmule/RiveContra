@@ -6,6 +6,8 @@ import { SETTINGS } from '@/lib/game/settings';
 export function HexButton({
   children,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
   disabled,
   innerClassName = 'tracking-widest',
   outerClassName = '',
@@ -13,6 +15,8 @@ export function HexButton({
 }: {
   children: React.ReactNode;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
   disabled?: boolean;
   innerClassName?: string;
   outerClassName?: string;
@@ -26,6 +30,8 @@ export function HexButton({
   return (
     <button
       onClick={handleClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       disabled={disabled}
       style={{ minWidth: SETTINGS.buttonMinWidth, ...style }}
       className={`group btn-hex p-px bg-white/30 disabled:cursor-not-allowed ${outerClassName}`}

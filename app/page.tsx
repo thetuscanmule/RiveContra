@@ -114,6 +114,7 @@ export default function Home() {
   const [reactionLine,  setReactionLine]  = useState('');
   const [lastReaction,  setLastReaction]  = useState('');
   const [diceRevealed,  setDiceRevealed]  = useState(false);
+  const [hoveredOption, setHoveredOption] = useState<number | null>(null);
 
   // Audio state
   const [jawOpen,        setJawOpen]        = useState(0);
@@ -512,7 +513,8 @@ export default function Home() {
     setTimeout(() => setPhase('greeting'), SETTINGS.pauseBeforeGreeting);
   };
 
-  const riveScene   = PHASE_TO_SCENE[phase];
+  const riveScene     = PHASE_TO_SCENE[phase];
+  const riveFlameLevel = hoveredOption ?? 0;
   const riveRoll    = rollResult?.roll ?? 0;
   // emotion: 1=win during/after success, 2=lose during/after failure, 0=idle
   const riveEmotion = (phase === 'reacting' || phase === 'results')
@@ -684,7 +686,7 @@ export default function Home() {
 
           {/* Row 1 — Rive canvas */}
           <div className="relative">
-            <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome}
+            <GameRive scene={riveScene} jawOpen={jawOpen} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} flameLevel={riveFlameLevel}
               scale={isMobile ? SETTINGS.riveScale.scaleMobile : SETTINGS.riveScale.scale} />
 
 
@@ -739,6 +741,8 @@ export default function Home() {
             <HexButton
               key={opt.threshold}
               onClick={() => handleOption(opt.threshold, i)}
+              onMouseEnter={() => setHoveredOption(i)}
+              onMouseLeave={() => setHoveredOption(null)}
               innerClassName=""
               style={{ minWidth: SETTINGS.optionButtonMinWidth }}
             >

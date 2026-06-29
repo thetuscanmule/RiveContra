@@ -54,12 +54,13 @@
     "inputRoll": "roll",
     "inputEmotion": "emotion",
     "inputDiceWin": "dicewin",
-    "inputDiceFail": "dicefail"
+    "inputDiceFail": "dicefail",
+    "inputFlameLevel": "flameLevel"
   },
   "pageTitle": "SkullGuy",
   "faviconSrc": "/favicon.svg",
   "smoothing": 0.95,
-  "speechSpeed": 0.8,
+  "speechSpeed": 0.7,
   "contraUrl": "https://contra.com/matt_buchanan_gxa8y2ro?referralExperimentNid=DEFAULT_REFERRAL_PROGRAM&referrerUsername=matt_buchanan_gxa8y2ro",
   "pauseBeforeGreeting": 1000,
   "pauseBeforePreRoll": 500,

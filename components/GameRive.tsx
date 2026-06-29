@@ -10,14 +10,15 @@ interface Props {
   roll:        number;           // 1–8  (active during dice scene)
   emotion:     number;           // 0=idle 1=win 2=lose
   diceOutcome: 'win' | 'fail' | null; // fires dicewin/dicefail trigger once at reveal
+  flameLevel:  number;           // 0–2  (option hover: 0=none/safe, 1=medium, 2=risky)
   scale:       number;           // resolved desktop or mobile scale
 }
 
-export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome, scale }: Props) {
+export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome, flameLevel, scale }: Props) {
   const {
     artboard, stateMachine,
     inputScene, inputJawOpen, inputRoll, inputEmotion,
-    inputDiceWin, inputDiceFail,
+    inputDiceWin, inputDiceFail, inputFlameLevel,
   } = SETTINGS.rive;
 
   const { rive, RiveComponent } = useRive({
@@ -28,17 +29,19 @@ export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome, scale }: 
     onLoadError: (e) => console.error('[GameRive] load error', e),
   });
 
-  const sceneInput    = useStateMachineInput(rive, stateMachine, inputScene);
-  const jawInput      = useStateMachineInput(rive, stateMachine, inputJawOpen);
-  const rollInput     = useStateMachineInput(rive, stateMachine, inputRoll);
-  const emotionInput  = useStateMachineInput(rive, stateMachine, inputEmotion);
-  const diceWinInput  = useStateMachineInput(rive, stateMachine, inputDiceWin);
-  const diceFailInput = useStateMachineInput(rive, stateMachine, inputDiceFail);
+  const sceneInput      = useStateMachineInput(rive, stateMachine, inputScene);
+  const jawInput        = useStateMachineInput(rive, stateMachine, inputJawOpen);
+  const rollInput       = useStateMachineInput(rive, stateMachine, inputRoll);
+  const emotionInput    = useStateMachineInput(rive, stateMachine, inputEmotion);
+  const diceWinInput    = useStateMachineInput(rive, stateMachine, inputDiceWin);
+  const diceFailInput   = useStateMachineInput(rive, stateMachine, inputDiceFail);
+  const flameLevelInput = useStateMachineInput(rive, stateMachine, inputFlameLevel);
 
-  useEffect(() => { if (sceneInput)   sceneInput.value   = scene;   }, [sceneInput,   scene]);
-  useEffect(() => { if (jawInput)     jawInput.value     = jawOpen; }, [jawInput,     jawOpen]);
-  useEffect(() => { if (rollInput)    rollInput.value    = roll;    }, [rollInput,    roll]);
-  useEffect(() => { if (emotionInput) emotionInput.value = emotion; }, [emotionInput, emotion]);
+  useEffect(() => { if (sceneInput)      sceneInput.value      = scene;      }, [sceneInput,      scene]);
+  useEffect(() => { if (jawInput)        jawInput.value        = jawOpen;    }, [jawInput,        jawOpen]);
+  useEffect(() => { if (rollInput)       rollInput.value       = roll;       }, [rollInput,       roll]);
+  useEffect(() => { if (emotionInput)    emotionInput.value    = emotion;    }, [emotionInput,    emotion]);
+  useEffect(() => { if (flameLevelInput) flameLevelInput.value = flameLevel; }, [flameLevelInput, flameLevel]);
 
   // Triggers are one-shot — fire once when diceOutcome is set, not on every render.
   useEffect(() => {

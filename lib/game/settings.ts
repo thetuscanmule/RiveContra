@@ -24,8 +24,9 @@ export const SETTINGS = data as {
     inputJawOpen: string;
     inputRoll:     string;
     inputEmotion:  string;
-    inputDiceWin:  string;
-    inputDiceFail: string;
+    inputDiceWin:    string;
+    inputDiceFail:   string;
+    inputFlameLevel: string;
   };
   pageTitle:            string;
   faviconSrc:           string;
