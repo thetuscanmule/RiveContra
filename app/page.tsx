@@ -660,7 +660,7 @@ export default function Home() {
         >
           <div style={{ transform: `scale(${isMobile ? SETTINGS.startScreen.scaleMobile : SETTINGS.startScreen.scale})`, transformOrigin: 'center center' }}
                className="flex flex-col items-center gap-0">
-            <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-[317px] -mb-3" />
+            <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-[317px]" style={{ marginBottom: SETTINGS.startScreen.logoGap }} />
             <HexButton onClick={handleStart}>Enter</HexButton>
           </div>
         </div>

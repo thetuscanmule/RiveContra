@@ -53,7 +53,7 @@ export const SETTINGS = data as {
   resultsButtonMinWidth: number;
   optionButtonMinWidth: number;
   optionButtonGap:      number;
-  startScreen:          { scale: number; scaleMobile: number };
+  startScreen:          { scale: number; scaleMobile: number; logoGap: number };
   dialogue:             DialogueConfig;
   riveScale:            { scale: number; scaleMobile: number };
   texture:              TextureConfig;

@@ -96,7 +96,8 @@
   "optionButtonGap": 1.5,
   "startScreen": {
     "scale": 1.2,
-    "scaleMobile": 0.8
+    "scaleMobile": 0.8,
+    "logoGap": -26
   },
   "dialogue": {
     "name": {
