@@ -630,6 +630,13 @@ export default function Home() {
       </div>
     )}
 
+    {SETTINGS.debugOverlay && (
+      <div className="fixed top-2 left-2 z-50 flex flex-col gap-0.5 rounded bg-black/70 px-2 py-1 font-mono text-xs text-lime-400 pointer-events-none">
+        <span>Roll: {rollResult?.roll ?? '–'}</span>
+        <span>Jaw: {jawOpen.toFixed(3)}</span>
+      </div>
+    )}
+
     <main className="relative z-10 min-h-screen flex flex-col items-center">
 
       {/* HUD bar */}
@@ -724,12 +731,6 @@ export default function Home() {
           <div className="relative">
             <GameRive scene={riveScene} jawOpen={Math.max(jawOpen, hoverJaw)} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} flameLevel={riveFlameLevel}
               scale={isMobile ? SETTINGS.riveScale.scaleMobile : SETTINGS.riveScale.scale} />
-
-
-            {/* Jaw debug */}
-            <span className="absolute bottom-2 right-3 font-mono text-xs tabular-nums text-green-700">
-              jaw {jawOpen.toFixed(3)}
-            </span>
           </div>
 
           {/* Row 2 — Dialogue + option buttons */}

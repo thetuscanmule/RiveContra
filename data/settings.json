@@ -62,6 +62,7 @@
   "pageTitle": "SkullGuy",
   "faviconSrc": "/favicon.svg",
   "smoothing": 0.95,
+  "debugOverlay": false,
   "hoverJaw": {
     "button0": 0.3,
     "button1": 0.6,
@@ -72,8 +73,8 @@
   "contraUrl": "https://contra.com/matt_buchanan_gxa8y2ro?referralExperimentNid=DEFAULT_REFERRAL_PROGRAM&referrerUsername=matt_buchanan_gxa8y2ro",
   "pauseBeforeGreeting": 1000,
   "pauseBeforePreRoll": 500,
-  "pauseDiceReveal": 3000,
-  "pauseDiceRoll": 7000,
+  "pauseDiceReveal": 500,
+  "pauseDiceRoll": 8000,
   "pauseBeforeResults": 2000,
   "pauseUiFade": 400,
   "dialogueFade": 600,
