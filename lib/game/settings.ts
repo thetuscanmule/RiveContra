@@ -38,6 +38,7 @@ export const SETTINGS = data as {
   pauseBeforeGreeting:  number;
   pauseBeforePreRoll:   number;
   pauseDiceReveal:      number;
+  pauseGradientShift:   number;
   pauseDiceRoll:        number;
   pauseBeforeResults:   number;
   pauseUiFade:          number;

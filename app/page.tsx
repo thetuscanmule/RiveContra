@@ -114,6 +114,7 @@ export default function Home() {
   const [reactionLine,  setReactionLine]  = useState('');
   const [lastReaction,  setLastReaction]  = useState('');
   const [diceRevealed,  setDiceRevealed]  = useState(false);
+  const [gradientShifted, setGradientShifted] = useState(false);
   const [hoveredOption, setHoveredOption] = useState<number | null>(null);
   const [hoverJaw,      setHoverJaw]      = useState(0);
 
@@ -378,8 +379,10 @@ export default function Home() {
     prefetchedPreRollRef.current = null;
     setCurrentDialogue(line);
     setDiceRevealed(false);
-    const speakTimer  = setTimeout(() => speak(line).catch(console.error), SETTINGS.pauseBeforePreRoll);
-    const revealTimer = setTimeout(() => setDiceRevealed(true), SETTINGS.pauseDiceReveal);
+    setGradientShifted(false);
+    const speakTimer    = setTimeout(() => speak(line).catch(console.error), SETTINGS.pauseBeforePreRoll);
+    const revealTimer   = setTimeout(() => setDiceRevealed(true), SETTINGS.pauseDiceReveal);
+    const gradientTimer = setTimeout(() => setGradientShifted(true), SETTINGS.pauseGradientShift);
     const doneTimer   = setTimeout(() => {
       const result = rollResultRef.current!;
       const kind   = result.success ? 'affirmative' : 'negative';
@@ -389,7 +392,7 @@ export default function Home() {
       setLastReaction(rawReaction);
       setPhase('reacting');
     }, SETTINGS.pauseDiceRoll);
-    return () => { clearTimeout(speakTimer); clearTimeout(revealTimer); clearTimeout(doneTimer); stopSpeech(); };
+    return () => { clearTimeout(speakTimer); clearTimeout(revealTimer); clearTimeout(gradientTimer); clearTimeout(doneTimer); stopSpeech(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
@@ -565,7 +568,7 @@ export default function Home() {
       : null;
 
   const gradientTheme: ThemeKey =
-    (phase === 'resolving' && diceRevealed)
+    (phase === 'resolving' && gradientShifted)
       ? (rollResult?.success ? 'win' : 'lose')
       : 'default';
 

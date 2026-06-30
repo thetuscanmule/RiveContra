@@ -16,8 +16,8 @@
   "background": {
     "themes": {
       "default": {
-        "inner": "#212121",
-        "outer": "#080808",
+        "inner": "#1c1c1c",
+        "outer": "#1a1a1a",
         "falloff": 90
       },
       "win": {
@@ -35,7 +35,7 @@
   "rings": [
     {
       "src": "/ring1.svg",
-      "opacity": 0.14,
+      "opacity": 0.18,
       "scale": 1.15,
       "speed": 120,
       "direction": "cw"
@@ -73,7 +73,8 @@
   "contraUrl": "https://contra.com/matt_buchanan_gxa8y2ro?referralExperimentNid=DEFAULT_REFERRAL_PROGRAM&referrerUsername=matt_buchanan_gxa8y2ro",
   "pauseBeforeGreeting": 1000,
   "pauseBeforePreRoll": 500,
-  "pauseDiceReveal": 500,
+  "pauseDiceReveal": 250,
+  "pauseGradientShift": 3000,
   "pauseDiceRoll": 8000,
   "pauseBeforeResults": 2000,
   "pauseUiFade": 400,
