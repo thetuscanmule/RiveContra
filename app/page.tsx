@@ -789,6 +789,7 @@ export default function Home() {
               onMouseLeave={() => setHoveredOption(null)}
               innerClassName=""
               style={{ minWidth: SETTINGS.optionButtonMinWidth }}
+              hoverVolumeMultiplier={SETTINGS.optionButtonHoverVolumeMultiplier}
             >
               <span className="flex items-center justify-between gap-4 w-full">
                 <span>{opt.label}</span>

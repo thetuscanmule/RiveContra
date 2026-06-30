@@ -1,6 +1,7 @@
 'use client';
 
 import { playClickSound } from '@/lib/game/playClickSound';
+import { playHoverSound } from '@/lib/game/playHoverSound';
 import { SETTINGS } from '@/lib/game/settings';
 
 export function HexButton({
@@ -12,6 +13,7 @@ export function HexButton({
   innerClassName = 'tracking-widest',
   outerClassName = '',
   style,
+  hoverVolumeMultiplier = 1,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
@@ -21,19 +23,25 @@ export function HexButton({
   innerClassName?: string;
   outerClassName?: string;
   style?: React.CSSProperties;
+  hoverVolumeMultiplier?: number;
 }) {
   function handleClick() {
     playClickSound();
     onClick?.();
   }
 
+  function handleMouseEnter() {
+    playHoverSound(hoverVolumeMultiplier);
+    onMouseEnter?.();
+  }
+
   return (
     <button
       onClick={handleClick}
-      onMouseEnter={onMouseEnter}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={onMouseLeave}
       disabled={disabled}
-      style={{ minWidth: SETTINGS.buttonMinWidth, ...style }}
+      style={{ minWidth: SETTINGS.buttonMinWidth, '--btn-hover-scale': SETTINGS.buttonHoverScale, ...style } as React.CSSProperties}
       className={`group btn-hex p-px bg-white/30 disabled:cursor-not-allowed ${outerClassName}`}
     >
       <span

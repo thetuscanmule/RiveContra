@@ -1,7 +1,32 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx create-next-app@14 skull --typescript --tailwind --app --no-src-dir --no-import-alias --eslint)"
+      "Bash(npx create-next-app@14 skull --typescript --tailwind --app --no-src-dir --no-import-alias --eslint)",
+      "Bash(git commit -m ' *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3001/)",
+      "Bash(curl -s http://localhost:3002/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/admin)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/admin)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/admin)",
+      "Bash(curl -s http://localhost:3000/api/leaderboard)",
+      "Bash(curl -s -X POST http://localhost:3000/api/leaderboard/submit -H 'Content-Type: application/json' -d '{\"name\":\"Test\",\"score\":6}')",
+      "Bash(curl -s \"http://localhost:3000/api/leaderboard/debug\")",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -X POST https://ktsxflxkxfsdcmqscfyi.supabase.co/rest/v1/leaderboard -H 'apikey: sb_publishable_ak-SB19rc7_zGlvEvs2aeA_qbH-xHHv' -H 'Authorization: Bearer sb_publishable_ak-SB19rc7_zGlvEvs2aeA_qbH-xHHv' -H 'Content-Type: application/json' -H 'Prefer: return=representation' -d '{\"name\":\"Test\",\"score\":10}')",
+      "Bash(curl -s https://ktsxflxkxfsdcmqscfyi.supabase.co/rest/v1/leaderboard?select=* -H 'apikey: sb_publishable_ak-SB19rc7_zGlvEvs2aeA_qbH-xHHv' -H 'Authorization: Bearer sb_publishable_ak-SB19rc7_zGlvEvs2aeA_qbH-xHHv')",
+      "Bash(grep -E \"^[A-Za-z][a-zA-Z0-9 _-]{2,30}$\")",
+      "Bash(grep -E \"^[A-Za-z][a-zA-Z0-9_ ]{1,30}$\")",
+      "Bash(lsof -nP -iTCP:3000 -sTCP:LISTEN)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/admin)",
+      "Bash(xargs cat)",
+      "Bash(git status *)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp"
     ]
   }
 }

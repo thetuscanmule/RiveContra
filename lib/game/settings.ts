@@ -46,6 +46,8 @@ export const SETTINGS = data as {
   luck:                 number;
   layout:               { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number };
   buttonMinWidth:        number;
+  buttonHoverScale:      number;
+  optionButtonHoverVolumeMultiplier: number;
   buttonPaddingX:        number;
   buttonPaddingY:        number;
   resultsButtonMinWidth: number;
@@ -55,5 +57,5 @@ export const SETTINGS = data as {
   dialogue:             DialogueConfig;
   riveScale:            { scale: number; scaleMobile: number };
   texture:              TextureConfig;
-  audio:                { phases: Record<string, AudioClip>; ui: { click: AudioClip } };
+  audio:                { phases: Record<string, AudioClip>; ui: { click: AudioClip; hover: AudioClip } };
 };

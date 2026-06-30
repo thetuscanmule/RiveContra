@@ -45,7 +45,7 @@ button.btn-hex {
   filter: drop-shadow(0 0 1px rgba(255,255,255,0.2)) drop-shadow(0 4px 14px rgba(0,0,0,0.7)) drop-shadow(0 0 0px rgba(212,255,62,0));
 }
 button.btn-hex:hover {
-  transform: scale(1.05);
+  transform: scale(var(--btn-hover-scale, 1.05));
   filter: drop-shadow(0 0 1px rgba(255,255,255,0.2)) drop-shadow(0 4px 14px rgba(0,0,0,0.7)) drop-shadow(0 0 40px rgba(212,255,62,0.8));
 }
 button.btn-hex:active {

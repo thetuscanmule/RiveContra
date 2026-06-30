@@ -42,7 +42,7 @@
     },
     {
       "src": "/ring2.svg",
-      "opacity": 0.6,
+      "opacity": 0.44,
       "scale": 1.85,
       "speed": 240,
       "direction": "cw"
@@ -87,6 +87,8 @@
     "rowGapMobile": 10
   },
   "buttonMinWidth": 220,
+  "buttonHoverScale": 1.1,
+  "optionButtonHoverVolumeMultiplier": 5,
   "buttonPaddingX": 32,
   "buttonPaddingY": 12,
   "resultsButtonMinWidth": 260,
@@ -127,6 +129,11 @@
       "click": {
         "src": "/audio/ui-click.mp3",
         "volume": 0.2,
+        "loop": false
+      },
+      "hover": {
+        "src": "/audio/ui-hover.mp3",
+        "volume": 0.39,
         "loop": false
       }
     },
