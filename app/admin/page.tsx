@@ -17,7 +17,7 @@ type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey,
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: [], preRoll: [], affirmative: { safe: [], medium: [], risky: [] }, negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0 }, hover: { src: '', hotspotX: 0, hotspotY: 0 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, pageTitle: 'Dice Quest', faviconSrc: '', smoothing: 0.95, hoverJaw: { button0: 0.3, button1: 0.6, button2: 0.9, speed: 0.12 }, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseBeforePreRoll: 0, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, contraUrl: '', resultsButtonMinWidth: 280, buttonPaddingX: 64, buttonPaddingY: 11, luck: 0, optionButtonMinWidth: 320, optionButtonGap: 1, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, startScreen: { scale: 1.0, scaleMobile: 1.0 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 }, hover: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, pageTitle: 'Dice Quest', faviconSrc: '', smoothing: 0.95, hoverJaw: { button0: 0.3, button1: 0.6, button2: 0.9, speed: 0.12 }, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseBeforePreRoll: 0, pauseDiceReveal: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, contraUrl: '', resultsButtonMinWidth: 280, buttonPaddingX: 64, buttonPaddingY: 11, luck: 0, optionButtonMinWidth: 320, optionButtonGap: 1, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, startScreen: { scale: 1.0, scaleMobile: 1.0 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false } } } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const [tab,        setTab]        = useState<'ui' | 'gameplay'>('ui');
@@ -1231,6 +1231,28 @@ function CursorSlotCard({
               className="w-16 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
             />
           </div>
+        </div>
+      </div>
+
+      {/* Scale */}
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>
+          <FieldLabel>Scale</FieldLabel>
+          <p className="text-xs text-gray-400">Resizes the cursor image. 1 = original size.</p>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 ml-6">
+          <input
+            type="range" min={0.25} max={3} step={0.05}
+            value={cursor.scale}
+            onChange={e => onChange({ ...cursor, scale: Number(e.target.value) })}
+            className="w-32"
+          />
+          <input
+            type="number" min={0.25} max={3} step={0.05}
+            value={cursor.scale}
+            onChange={e => onChange({ ...cursor, scale: Number(e.target.value) })}
+            className="w-16 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+          />
         </div>
       </div>
 

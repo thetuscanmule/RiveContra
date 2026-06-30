@@ -8,7 +8,7 @@ export type DialogueConfig = {
 };
 export type AudioClip     = { src: string; volume: number; loop: boolean };
 export type TextureConfig = { src: string; size: number; opacity: number };
-export type CursorSlot   = { src: string; hotspotX: number; hotspotY: number };
+export type CursorSlot   = { src: string; hotspotX: number; hotspotY: number; scale: number };
 export type CursorConfig = { default: CursorSlot; hover: CursorSlot };
 export type GradientTheme = { inner: string; outer: string; falloff: number };
 export type ThemeKey      = 'default' | 'win' | 'lose';

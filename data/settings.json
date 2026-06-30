@@ -1,14 +1,16 @@
 {
   "cursor": {
     "default": {
-      "src": "/cursor.png",
+      "src": "/cursor-default.svg",
       "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotY": 0,
+      "scale": 1
     },
     "hover": {
-      "src": "/cursor-hover.png",
+      "src": "/cursor-hover.svg",
       "hotspotX": 0,
-      "hotspotY": 0
+      "hotspotY": 0,
+      "scale": 1
     }
   },
   "background": {
@@ -34,7 +36,7 @@
     {
       "src": "/ring1.svg",
       "opacity": 0.15,
-      "scale": 1.2,
+      "scale": 0.1,
       "speed": 120,
       "direction": "cw"
     },
