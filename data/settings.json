@@ -42,7 +42,7 @@
     },
     {
       "src": "/ring2.svg",
-      "opacity": 0.3,
+      "opacity": 0.15,
       "scale": 1.9,
       "speed": 240,
       "direction": "cw"
