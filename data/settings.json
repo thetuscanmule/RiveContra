@@ -17,7 +17,7 @@
     "themes": {
       "default": {
         "inner": "#292929",
-        "outer": "#121212",
+        "outer": "#0d0d0d",
         "falloff": 75
       },
       "win": {
@@ -35,15 +35,15 @@
   "rings": [
     {
       "src": "/ring1.svg",
-      "opacity": 0.15,
-      "scale": 1.05,
+      "opacity": 0.24,
+      "scale": 1.15,
       "speed": 120,
       "direction": "cw"
     },
     {
       "src": "/ring2.svg",
-      "opacity": 0.35,
-      "scale": 1.85,
+      "opacity": 0.3,
+      "scale": 1.9,
       "speed": 240,
       "direction": "cw"
     }
@@ -63,6 +63,8 @@
   "pageTitle": "SkullGuy",
   "faviconSrc": "/favicon.svg",
   "smoothing": 0.95,
+  "jawDefault": 0.25,
+  "jawReturnDuration": 1000,
   "debugOverlay": false,
   "hoverJaw": {
     "button0": 0.3,
@@ -102,7 +104,7 @@
   "optionButtonMinWidth": 420,
   "optionButtonGap": 1.5,
   "startScreen": {
-    "scale": 1.2,
+    "scale": 1.1,
     "scaleMobile": 0.8,
     "logoGap": -18
   },

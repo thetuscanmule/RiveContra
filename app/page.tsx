@@ -123,7 +123,7 @@ export default function Home() {
   const [enterHoverValue, setEnterHoverValue] = useState(0);
 
   // Audio state
-  const [jawOpen,        setJawOpen]        = useState(0);
+  const [jawOpen,        setJawOpen]        = useState(SETTINGS.jawDefault);
   const [isSpeaking,     setIsSpeaking]     = useState(false);
   const [isStartFading,  setIsStartFading]  = useState(false);
   const [showStartButton, setShowStartButton] = useState(true);
@@ -161,7 +161,7 @@ export default function Home() {
   const musicStarted   = useRef(false);
   const sourceRef      = useRef<AudioBufferSourceNode | null>(null);
   const rafRef         = useRef<number>(0);
-  const smoothedRef    = useRef(0);
+  const smoothedRef    = useRef(SETTINGS.jawDefault);
   const hoverRafRef    = useRef<number>(0);
   const hoverJawRef    = useRef(0);
   const enterHoverRafRef = useRef<number>(0);
@@ -256,8 +256,8 @@ export default function Home() {
       sourceRef.current = null;
     }
     setIsSpeaking(false);
-    smoothedRef.current = 0;
-    setJawOpen(0);
+    smoothedRef.current = SETTINGS.jawDefault;
+    setJawOpen(SETTINGS.jawDefault);
   }, []);
 
   const speak = useCallback(async (text: string): Promise<void> => {
@@ -318,18 +318,18 @@ export default function Home() {
       source.onended = () => {
         cancelAnimationFrame(rafRef.current);
         setIsSpeaking(false);
-        // Ease jaw back to 0
-        const ease = () => {
-          smoothedRef.current *= 0.82;
-          setJawOpen(smoothedRef.current);
-          if (smoothedRef.current > 0.005) {
-            rafRef.current = requestAnimationFrame(ease);
-          } else {
-            setJawOpen(0);
-            smoothedRef.current = 0;
-          }
+        // Lerp jaw back to default pose over jawReturnDuration ms
+        const startVal  = smoothedRef.current;
+        const startTime = performance.now();
+        const ease = (now: number) => {
+          const dur = SETTINGS.jawReturnDuration;
+          const t   = dur > 0 ? Math.min(1, (now - startTime) / dur) : 1;
+          const val = startVal + (SETTINGS.jawDefault - startVal) * t;
+          smoothedRef.current = val;
+          setJawOpen(val);
+          if (t < 1) rafRef.current = requestAnimationFrame(ease);
         };
-        ease();
+        rafRef.current = requestAnimationFrame(ease);
         resolve();
       };
     });

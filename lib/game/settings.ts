@@ -32,6 +32,8 @@ export const SETTINGS = data as {
   pageTitle:            string;
   faviconSrc:           string;
   smoothing:            number;
+  jawDefault:           number;
+  jawReturnDuration:    number;
   debugOverlay:         boolean;
   hoverJaw:             { button0: number; button1: number; button2: number; speed: number };
   speechSpeed:          number;
