@@ -179,6 +179,17 @@ export default function Home() {
   useEffect(() => { rollResultRef.current = rollResult; }, [rollResult]);
   useEffect(() => { streakRef.current = streak; },        [streak]);
 
+  // Quick fade pulse on the dialogue name label whenever the streak value changes
+  const [streakLabelFading, setStreakLabelFading] = useState(false);
+  const prevStreakRef = useRef(streak);
+  useEffect(() => {
+    if (prevStreakRef.current === streak) return;
+    prevStreakRef.current = streak;
+    setStreakLabelFading(true);
+    const t = setTimeout(() => setStreakLabelFading(false), 150);
+    return () => clearTimeout(t);
+  }, [streak]);
+
   // Smoothly interpolate jaw open value toward hover target (0.3 / 0.6 / 0.9 per button)
   useEffect(() => {
     const HOVER_JAW = [SETTINGS.hoverJaw.button0, SETTINGS.hoverJaw.button1, SETTINGS.hoverJaw.button2];
@@ -388,14 +399,19 @@ export default function Home() {
     let active = true;
     const resolvedReaction = replaceShortcodes(reactionLine, playerName);
     setCurrentDialogue(resolvedReaction);
+
+    // Bump the streak as soon as the reaction speech starts, not when it finishes
+    const nextStreak = rollResultRef.current?.success
+      ? streakRef.current + (rollResultRef.current?.steps ?? 1)
+      : null;
+    if (nextStreak !== null) setStreak(nextStreak);
+
     speak(resolvedReaction).then(() => {
       if (!active) return;
-      if (rollResultRef.current?.success) {
-        const nextStreak = streakRef.current + (rollResultRef.current?.steps ?? 1);
-        const nextIds    = new Set(usedIdsRef.current);
-        const nextEnc    = pickEncounter(nextStreak, nextIds, ENCOUNTERS);
+      if (rollResultRef.current?.success && nextStreak !== null) {
+        const nextIds = new Set(usedIdsRef.current);
+        const nextEnc = pickEncounter(nextStreak, nextIds, ENCOUNTERS);
         nextIds.add(nextEnc.id);
-        setStreak(nextStreak);
         setUsedIds(nextIds);
         setEncounter(nextEnc);
         setPhase('presenting');
@@ -620,9 +636,7 @@ export default function Home() {
       <div
         className="w-full max-w-lg h-16 flex items-end justify-between px-2 pb-1 transition-opacity duration-300 shrink-0"
         style={{ opacity: (phase === 'start' || phase === 'naming') ? 0 : 1 }}
-      >
-        <span className="font-mono text-sm text-green-500">Streak: {streak}</span>
-      </div>
+      />
 
       {/* Start overlay — over full main area so logo+button are viewport-centred */}
       {phase === 'start' && showStartButton && (
@@ -734,9 +748,13 @@ export default function Home() {
             <div className="flex flex-col items-center gap-2 text-center">
               <h3
                 className="font-display tracking-widest"
-                style={{ fontSize: SETTINGS.dialogue.name.fontSize, opacity: SETTINGS.dialogue.name.opacity }}
+                style={{
+                  fontSize: SETTINGS.dialogue.name.fontSize,
+                  opacity: streakLabelFading ? 0 : SETTINGS.dialogue.name.opacity,
+                  transition: 'opacity 150ms ease',
+                }}
               >
-                {SETTINGS.dialogue.name.text}
+                {streak > 0 ? `Streak - ${streak}` : SETTINGS.dialogue.name.text}
               </h3>
               <GameDivider />
               <p
