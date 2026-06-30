@@ -11,14 +11,15 @@ interface Props {
   emotion:     number;           // 0=idle 1=win 2=lose
   diceOutcome: 'win' | 'fail' | null; // fires dicewin/dicefail trigger once at reveal
   flameLevel:  number;           // 0–2  (option hover: 0=none/safe, 1=medium, 2=risky)
+  enterHover:  number;           // 0–2  (start screen: 0 idle, 1 hovered, 2 fired on Enter click)
   scale:       number;           // resolved desktop or mobile scale
 }
 
-export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome, flameLevel, scale }: Props) {
+export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome, flameLevel, enterHover, scale }: Props) {
   const {
     artboard, stateMachine,
     inputScene, inputJawOpen, inputRoll, inputEmotion,
-    inputDiceWin, inputDiceFail, inputFlameLevel,
+    inputDiceWin, inputDiceFail, inputFlameLevel, inputEnterHover,
   } = SETTINGS.rive;
 
   const { rive, RiveComponent } = useRive({
@@ -36,12 +37,14 @@ export function GameRive({ scene, jawOpen, roll, emotion, diceOutcome, flameLeve
   const diceWinInput    = useStateMachineInput(rive, stateMachine, inputDiceWin);
   const diceFailInput   = useStateMachineInput(rive, stateMachine, inputDiceFail);
   const flameLevelInput = useStateMachineInput(rive, stateMachine, inputFlameLevel);
+  const enterHoverInput = useStateMachineInput(rive, stateMachine, inputEnterHover);
 
   useEffect(() => { if (sceneInput)      sceneInput.value      = scene;      }, [sceneInput,      scene]);
   useEffect(() => { if (jawInput)        jawInput.value        = jawOpen;    }, [jawInput,        jawOpen]);
   useEffect(() => { if (rollInput)       rollInput.value       = roll;       }, [rollInput,       roll]);
   useEffect(() => { if (emotionInput)    emotionInput.value    = emotion;    }, [emotionInput,    emotion]);
   useEffect(() => { if (flameLevelInput) flameLevelInput.value = flameLevel; }, [flameLevelInput, flameLevel]);
+  useEffect(() => { if (enterHoverInput) enterHoverInput.value = enterHover; }, [enterHoverInput, enterHover]);
 
   // Triggers are one-shot — fire once when diceOutcome is set, not on every render.
   useEffect(() => {

@@ -27,6 +27,7 @@ export const SETTINGS = data as {
     inputDiceWin:    string;
     inputDiceFail:   string;
     inputFlameLevel: string;
+    inputEnterHover: string;
   };
   pageTitle:            string;
   faviconSrc:           string;
@@ -56,6 +57,7 @@ export const SETTINGS = data as {
   optionButtonMinWidth: number;
   optionButtonGap:      number;
   startScreen:          { scale: number; scaleMobile: number; logoGap: number };
+  enterHover:           { fadeInDuration: number; fadeOutDuration: number };
   dialogue:             DialogueConfig;
   riveScale:            { scale: number; scaleMobile: number };
   texture:              TextureConfig;

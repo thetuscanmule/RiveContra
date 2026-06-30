@@ -119,6 +119,8 @@ export default function Home() {
   const [resultsRiveVisible, setResultsRiveVisible] = useState(true);
   const [hoveredOption, setHoveredOption] = useState<number | null>(null);
   const [hoverJaw,      setHoverJaw]      = useState(0);
+  const [enterHoverTarget, setEnterHoverTarget] = useState<0 | 1 | 2>(0);
+  const [enterHoverValue, setEnterHoverValue] = useState(0);
 
   // Audio state
   const [jawOpen,        setJawOpen]        = useState(0);
@@ -162,6 +164,8 @@ export default function Home() {
   const smoothedRef    = useRef(0);
   const hoverRafRef    = useRef<number>(0);
   const hoverJawRef    = useRef(0);
+  const enterHoverRafRef = useRef<number>(0);
+  const enterHoverRef    = useRef(0);
   const voiceCache     = useRef(new Map<string, string>());
   // Mirror rollResult in a ref so reacting-phase callbacks always read fresh value
   const rollResultRef   = useRef<RollResult | null>(null);
@@ -211,6 +215,25 @@ export default function Home() {
     animate();
     return () => cancelAnimationFrame(hoverRafRef.current);
   }, [hoveredOption]);
+
+  // Fade the start screen "enterHover" Rive input 0→1 on hover, 1→0 on unhover,
+  // and up to 2 on click — rising moves use fadeInDuration, falling moves use fadeOutDuration
+  useEffect(() => {
+    const target     = enterHoverTarget;
+    const startValue = enterHoverRef.current;
+    const duration   = target > startValue ? SETTINGS.enterHover.fadeInDuration : SETTINGS.enterHover.fadeOutDuration;
+    const startTime   = performance.now();
+    cancelAnimationFrame(enterHoverRafRef.current);
+    function animate(now: number) {
+      const t = duration > 0 ? Math.min(1, (now - startTime) / duration) : 1;
+      const value = startValue + (target - startValue) * t;
+      enterHoverRef.current = value;
+      setEnterHoverValue(value);
+      if (t < 1) enterHoverRafRef.current = requestAnimationFrame(animate);
+    }
+    enterHoverRafRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(enterHoverRafRef.current);
+  }, [enterHoverTarget]);
   useEffect(() => { usedIdsRef.current = usedIds; },      [usedIds]);
 
   // Reset optionsReady whenever a new encounter begins
@@ -520,6 +543,7 @@ export default function Home() {
 
   const handleStart = () => {
     setIsStartFading(true);
+    setEnterHoverTarget(2);
     unlock();
     setPhase('naming');
   };
@@ -676,7 +700,7 @@ export default function Home() {
           <div style={{ transform: `scale(${isMobile ? SETTINGS.startScreen.scaleMobile : SETTINGS.startScreen.scale})`, transformOrigin: 'center center' }}
                className="flex flex-col items-center gap-0">
             <img src="/SkullGuyLogo.svg" alt="SkullGuy" className="w-[317px]" style={{ marginBottom: SETTINGS.startScreen.logoGap }} />
-            <HexButton onClick={handleStart}>Enter</HexButton>
+            <HexButton onClick={handleStart} onMouseEnter={() => setEnterHoverTarget(1)} onMouseLeave={() => setEnterHoverTarget(0)}>Enter</HexButton>
           </div>
         </div>
       )}
@@ -760,7 +784,7 @@ export default function Home() {
               transition: `opacity ${SETTINGS.resultsCrossfade.riveFadeDuration}ms ease-out`,
             }}
           >
-            <GameRive scene={riveScene} jawOpen={Math.max(jawOpen, hoverJaw)} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} flameLevel={riveFlameLevel}
+            <GameRive scene={riveScene} jawOpen={Math.max(jawOpen, hoverJaw)} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} flameLevel={riveFlameLevel} enterHover={enterHoverValue}
               scale={isMobile ? SETTINGS.riveScale.scaleMobile : SETTINGS.riveScale.scale} />
           </div>
 

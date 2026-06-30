@@ -9,15 +9,15 @@ type Option    = { label: string; threshold: number };
 type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Option, Option, Option] };
 type AffirmativePools = { safe: string[]; medium: string[]; risky: string[] };
 type Reactions = { greeting: string[]; preRoll: string[]; affirmative: AffirmativePools; negative: string[] };
-type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; pageTitle: string; faviconSrc: string; smoothing: number; debugOverlay: boolean; hoverJaw: { button0: number; button1: number; button2: number; speed: number }; speechSpeed: number; pauseBeforeGreeting: number; pauseBeforePreRoll: number; pauseDiceReveal: number; pauseGradientShift: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseResultsReveal: number; resultsCrossfade: { riveFadeDuration: number; uiFadeDuration: number; offset: number }; pauseUiFade: number; dialogueFade: number; contraUrl: string; resultsButtonMinWidth: number; buttonPaddingX: number; buttonPaddingY: number; luck: number; optionButtonMinWidth: number; optionButtonGap: number; layout: { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number }; buttonMinWidth: number; buttonHoverScale: number; optionButtonHoverVolumeMultiplier: number; startScreen: { scale: number; scaleMobile: number; logoGap: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip; hover: AudioClip } } };
+type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string; inputFlameLevel: string; inputEnterHover: string };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; pageTitle: string; faviconSrc: string; smoothing: number; debugOverlay: boolean; hoverJaw: { button0: number; button1: number; button2: number; speed: number }; speechSpeed: number; pauseBeforeGreeting: number; pauseBeforePreRoll: number; pauseDiceReveal: number; pauseGradientShift: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseResultsReveal: number; resultsCrossfade: { riveFadeDuration: number; uiFadeDuration: number; offset: number }; pauseUiFade: number; dialogueFade: number; contraUrl: string; resultsButtonMinWidth: number; buttonPaddingX: number; buttonPaddingY: number; luck: number; optionButtonMinWidth: number; optionButtonGap: number; layout: { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number }; buttonMinWidth: number; buttonHoverScale: number; optionButtonHoverVolumeMultiplier: number; startScreen: { scale: number; scaleMobile: number; logoGap: number }; enterHover: { fadeInDuration: number; fadeOutDuration: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip; hover: AudioClip } } };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: [], preRoll: [], affirmative: { safe: [], medium: [], risky: [] }, negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 }, hover: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, pageTitle: 'Dice Quest', faviconSrc: '', smoothing: 0.95, debugOverlay: false, hoverJaw: { button0: 0.3, button1: 0.6, button2: 0.9, speed: 0.12 }, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseBeforePreRoll: 0, pauseDiceReveal: 1500, pauseGradientShift: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseResultsReveal: 0, resultsCrossfade: { riveFadeDuration: 500, uiFadeDuration: 500, offset: 0 }, pauseUiFade: 400, dialogueFade: 300, contraUrl: '', resultsButtonMinWidth: 280, buttonPaddingX: 64, buttonPaddingY: 11, luck: 0, optionButtonMinWidth: 320, optionButtonGap: 1, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, buttonHoverScale: 1.05, optionButtonHoverVolumeMultiplier: 1, startScreen: { scale: 1.0, scaleMobile: 1.0, logoGap: -12 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false }, hover: { src: '', volume: 1, loop: false } } } });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 }, hover: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail', inputFlameLevel: 'flameLevel', inputEnterHover: 'enterHover' }, pageTitle: 'Dice Quest', faviconSrc: '', smoothing: 0.95, debugOverlay: false, hoverJaw: { button0: 0.3, button1: 0.6, button2: 0.9, speed: 0.12 }, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseBeforePreRoll: 0, pauseDiceReveal: 1500, pauseGradientShift: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseResultsReveal: 0, resultsCrossfade: { riveFadeDuration: 500, uiFadeDuration: 500, offset: 0 }, pauseUiFade: 400, dialogueFade: 300, contraUrl: '', resultsButtonMinWidth: 280, buttonPaddingX: 64, buttonPaddingY: 11, luck: 0, optionButtonMinWidth: 320, optionButtonGap: 1, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, buttonHoverScale: 1.05, optionButtonHoverVolumeMultiplier: 1, startScreen: { scale: 1.0, scaleMobile: 1.0, logoGap: -12 }, enterHover: { fadeInDuration: 250, fadeOutDuration: 250 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false }, hover: { src: '', volume: 1, loop: false } } } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const [tab,        setTab]        = useState<'ui' | 'gameplay'>('ui');
@@ -610,6 +610,40 @@ export default function AdminPage() {
                 className="w-full accent-gray-700"
               />
             </div>
+
+            {/* Enter button hover — fade in */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Enter hover — fade in</FieldLabel>
+                <p className="text-xs text-gray-400">How long the Rive &quot;enterHover&quot; input takes to rise 0→1 when the Enter button is hovered.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={50}
+                  value={settings.enterHover.fadeInDuration}
+                  onChange={e => setSettings(s => ({ ...s, enterHover: { ...s.enterHover, fadeInDuration: Number(e.target.value) } }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
+            {/* Enter button hover — fade out */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Enter hover — fade out</FieldLabel>
+                <p className="text-xs text-gray-400">How long the Rive &quot;enterHover&quot; input takes to fall 1→0 once the Enter button is unhovered.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={50}
+                  value={settings.enterHover.fadeOutDuration}
+                  onChange={e => setSettings(s => ({ ...s, enterHover: { ...s.enterHover, fadeOutDuration: Number(e.target.value) } }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -763,6 +797,20 @@ export default function AdminPage() {
               description="Trigger input on the Game SM — fired once when a failing roll is revealed"
               value={settings.rive.inputDiceFail}
               onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputDiceFail: v } }))}
+            />
+
+            <RiveInputRow
+              label="Flame level input"
+              description="Number input (0–2) on the Game SM driven by option hover — 0=none/safe · 1=medium · 2=risky"
+              value={settings.rive.inputFlameLevel}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputFlameLevel: v } }))}
+            />
+
+            <RiveInputRow
+              label="Enter hover input"
+              description="Number input (0–1) on the Game SM — fades up when the start screen Enter button is hovered, back down when unhovered"
+              value={settings.rive.inputEnterHover}
+              onChange={v => setSettings(s => ({ ...s, rive: { ...s.rive, inputEnterHover: v } }))}
             />
 
           </div>
