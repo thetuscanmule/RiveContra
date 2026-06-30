@@ -36,14 +36,14 @@
     {
       "src": "/ring1.svg",
       "opacity": 0.15,
-      "scale": 0.1,
+      "scale": 1.15,
       "speed": 120,
       "direction": "cw"
     },
     {
       "src": "/ring2.svg",
-      "opacity": 0.71,
-      "scale": 2,
+      "opacity": 0.6,
+      "scale": 1.85,
       "speed": 240,
       "direction": "cw"
     }
