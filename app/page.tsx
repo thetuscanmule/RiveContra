@@ -115,6 +115,8 @@ export default function Home() {
   const [lastReaction,  setLastReaction]  = useState('');
   const [diceRevealed,  setDiceRevealed]  = useState(false);
   const [gradientShifted, setGradientShifted] = useState(false);
+  const [resultsUiVisible, setResultsUiVisible] = useState(false);
+  const [resultsRiveVisible, setResultsRiveVisible] = useState(true);
   const [hoveredOption, setHoveredOption] = useState<number | null>(null);
   const [hoverJaw,      setHoverJaw]      = useState(0);
 
@@ -470,6 +472,19 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  // reveal the results UI (score + buttons) after an admin-configurable delay,
+  // crossfading the Rive canvas out at an independently offset time
+  useEffect(() => {
+    if (phase !== 'results') {
+      setResultsUiVisible(false);
+      setResultsRiveVisible(true);
+      return;
+    }
+    const uiTimer   = setTimeout(() => setResultsUiVisible(true), SETTINGS.pauseResultsReveal);
+    const riveTimer = setTimeout(() => setResultsRiveVisible(false), SETTINGS.pauseResultsReveal + SETTINGS.resultsCrossfade.offset);
+    return () => { clearTimeout(uiTimer); clearTimeout(riveTimer); };
+  }, [phase]);
+
   // auto-submit score and pre-fetch leaderboard when results screen appears
   useEffect(() => {
     if (phase !== 'results') return;
@@ -703,7 +718,14 @@ export default function Home() {
 
       {/* Results overlay */}
       {phase === 'results' && !showLeaderboard && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8">
+        <div
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8"
+          style={{
+            opacity:       resultsUiVisible ? 1 : 0,
+            transition:    `opacity ${SETTINGS.resultsCrossfade.uiFadeDuration}ms ease-out`,
+            pointerEvents: resultsUiVisible ? 'auto' : 'none',
+          }}
+        >
           <div className="flex flex-col items-center gap-3">
             <h2 className="font-display tracking-widest text-white/50 text-base">Score</h2>
             <GameDivider />
@@ -731,7 +753,13 @@ export default function Home() {
         >
 
           {/* Row 1 — Rive canvas */}
-          <div className="relative">
+          <div
+            className="relative"
+            style={{
+              opacity:    phase === 'results' && !resultsRiveVisible ? 0 : 1,
+              transition: `opacity ${SETTINGS.resultsCrossfade.riveFadeDuration}ms ease-out`,
+            }}
+          >
             <GameRive scene={riveScene} jawOpen={Math.max(jawOpen, hoverJaw)} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} flameLevel={riveFlameLevel}
               scale={isMobile ? SETTINGS.riveScale.scaleMobile : SETTINGS.riveScale.scale} />
           </div>

@@ -24,7 +24,11 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/admin)",
       "Bash(xargs cat)",
       "Bash(git status *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs -r kill -9)",
+      "Bash(break)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/favicon.ico)"
     ],
     "additionalDirectories": [
       "/private/tmp"

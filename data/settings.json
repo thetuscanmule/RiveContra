@@ -16,8 +16,8 @@
   "background": {
     "themes": {
       "default": {
-        "inner": "#1c1c1c",
-        "outer": "#1a1a1a",
+        "inner": "#292929",
+        "outer": "#0a0a0a",
         "falloff": 90
       },
       "win": {
@@ -35,14 +35,14 @@
   "rings": [
     {
       "src": "/ring1.svg",
-      "opacity": 0.18,
+      "opacity": 0.2,
       "scale": 1.15,
       "speed": 120,
       "direction": "cw"
     },
     {
       "src": "/ring2.svg",
-      "opacity": 0.44,
+      "opacity": 0.35,
       "scale": 1.85,
       "speed": 240,
       "direction": "cw"
@@ -77,6 +77,12 @@
   "pauseGradientShift": 3000,
   "pauseDiceRoll": 8000,
   "pauseBeforeResults": 2000,
+  "pauseResultsReveal": 3000,
+  "resultsCrossfade": {
+    "riveFadeDuration": 500,
+    "uiFadeDuration": 500,
+    "offset": -500
+  },
   "pauseUiFade": 400,
   "dialogueFade": 600,
   "luck": 4,

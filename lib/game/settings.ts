@@ -41,6 +41,8 @@ export const SETTINGS = data as {
   pauseGradientShift:   number;
   pauseDiceRoll:        number;
   pauseBeforeResults:   number;
+  pauseResultsReveal:   number;
+  resultsCrossfade:     { riveFadeDuration: number; uiFadeDuration: number; offset: number };
   pauseUiFade:          number;
   dialogueFade:         number;
   luck:                 number;

@@ -10,14 +10,14 @@ type Encounter = { id: string; tier: 1 | 2 | 3; narration: string; options: [Opt
 type AffirmativePools = { safe: string[]; medium: string[]; risky: string[] };
 type Reactions = { greeting: string[]; preRoll: string[]; affirmative: AffirmativePools; negative: string[] };
 type RiveConfig = { artboard: string; stateMachine: string; inputScene: string; inputJawOpen: string; inputRoll: string; inputEmotion: string; inputDiceWin: string; inputDiceFail: string };
-type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; pageTitle: string; faviconSrc: string; smoothing: number; debugOverlay: boolean; hoverJaw: { button0: number; button1: number; button2: number; speed: number }; speechSpeed: number; pauseBeforeGreeting: number; pauseBeforePreRoll: number; pauseDiceReveal: number; pauseGradientShift: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseUiFade: number; dialogueFade: number; contraUrl: string; resultsButtonMinWidth: number; buttonPaddingX: number; buttonPaddingY: number; luck: number; optionButtonMinWidth: number; optionButtonGap: number; layout: { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number }; buttonMinWidth: number; buttonHoverScale: number; optionButtonHoverVolumeMultiplier: number; startScreen: { scale: number; scaleMobile: number; logoGap: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip; hover: AudioClip } } };
+type Settings   = { cursor: CursorConfig; background: { themes: Record<ThemeKey, GradientTheme> }; rings: Ring[]; texture: TextureConfig; rive: RiveConfig; pageTitle: string; faviconSrc: string; smoothing: number; debugOverlay: boolean; hoverJaw: { button0: number; button1: number; button2: number; speed: number }; speechSpeed: number; pauseBeforeGreeting: number; pauseBeforePreRoll: number; pauseDiceReveal: number; pauseGradientShift: number; pauseDiceRoll: number; pauseBeforeResults: number; pauseResultsReveal: number; resultsCrossfade: { riveFadeDuration: number; uiFadeDuration: number; offset: number }; pauseUiFade: number; dialogueFade: number; contraUrl: string; resultsButtonMinWidth: number; buttonPaddingX: number; buttonPaddingY: number; luck: number; optionButtonMinWidth: number; optionButtonGap: number; layout: { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number }; buttonMinWidth: number; buttonHoverScale: number; optionButtonHoverVolumeMultiplier: number; startScreen: { scale: number; scaleMobile: number; logoGap: number }; dialogue: DialogueConfig; riveScale: { scale: number; scaleMobile: number }; audio: { phases: Record<string, AudioClip>; ui: { click: AudioClip; hover: AudioClip } } };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [reactions,  setReactions]  = useState<Reactions>({ greeting: [], preRoll: [], affirmative: { safe: [], medium: [], risky: [] }, negative: [] });
-  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 }, hover: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, pageTitle: 'Dice Quest', faviconSrc: '', smoothing: 0.95, debugOverlay: false, hoverJaw: { button0: 0.3, button1: 0.6, button2: 0.9, speed: 0.12 }, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseBeforePreRoll: 0, pauseDiceReveal: 1500, pauseGradientShift: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseUiFade: 400, dialogueFade: 300, contraUrl: '', resultsButtonMinWidth: 280, buttonPaddingX: 64, buttonPaddingY: 11, luck: 0, optionButtonMinWidth: 320, optionButtonGap: 1, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, buttonHoverScale: 1.05, optionButtonHoverVolumeMultiplier: 1, startScreen: { scale: 1.0, scaleMobile: 1.0, logoGap: -12 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false }, hover: { src: '', volume: 1, loop: false } } } });
+  const [settings,   setSettings]   = useState<Settings>({ cursor: { default: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 }, hover: { src: '', hotspotX: 0, hotspotY: 0, scale: 1 } }, background: { themes: { default: { inner: '#1c1a2e', outer: '#06060a', falloff: 75 }, win: { inner: '#0f2e1a', outer: '#06090a', falloff: 75 }, lose: { inner: '#2e0f10', outer: '#0a0606', falloff: 75 } } }, rings: [{ src: '', opacity: 0.12, scale: 1.0, speed: 40, direction: 'cw' }, { src: '', opacity: 0.08, scale: 1.0, speed: 60, direction: 'ccw' }], rive: { artboard: '', stateMachine: 'Game', inputScene: 'scene', inputJawOpen: 'jawOpen', inputRoll: 'roll', inputEmotion: 'emotion', inputDiceWin: 'dicewin', inputDiceFail: 'dicefail' }, pageTitle: 'Dice Quest', faviconSrc: '', smoothing: 0.95, debugOverlay: false, hoverJaw: { button0: 0.3, button1: 0.6, button2: 0.9, speed: 0.12 }, speechSpeed: 0.7, pauseBeforeGreeting: 500, pauseBeforePreRoll: 0, pauseDiceReveal: 1500, pauseGradientShift: 1500, pauseDiceRoll: 2000, pauseBeforeResults: 1000, pauseResultsReveal: 0, resultsCrossfade: { riveFadeDuration: 500, uiFadeDuration: 500, offset: 0 }, pauseUiFade: 400, dialogueFade: 300, contraUrl: '', resultsButtonMinWidth: 280, buttonPaddingX: 64, buttonPaddingY: 11, luck: 0, optionButtonMinWidth: 320, optionButtonGap: 1, layout: { blockOffset: 0, blockOffsetMobile: 0, rowGap: 3, rowGapMobile: 2 }, buttonMinWidth: 200, buttonHoverScale: 1.05, optionButtonHoverVolumeMultiplier: 1, startScreen: { scale: 1.0, scaleMobile: 1.0, logoGap: -12 }, dialogue: { name: { text: 'SkullGuy', fontSize: 20, opacity: 1 }, body: { fontSize: 18, opacity: 0.7, lineHeight: 1.6 }, divider: { src: '', width: 48, opacity: 0.25 } }, riveScale: { scale: 1.0, scaleMobile: 1.0 }, texture: { src: '', size: 200, opacity: 0.05 }, audio: { phases: {}, ui: { click: { src: '', volume: 1, loop: false }, hover: { src: '', volume: 1, loop: false } } } });
   const [status,     setStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg,   setErrorMsg]   = useState('');
   const [tab,        setTab]        = useState<'ui' | 'gameplay'>('ui');
@@ -934,6 +934,74 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* Results UI reveal delay */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Results UI reveal delay</FieldLabel>
+                <p className="text-xs text-gray-400">Delay after entering the results screen state before the score and buttons fade in.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={100}
+                  value={settings.pauseResultsReveal}
+                  onChange={e => setSettings(s => ({ ...s, pauseResultsReveal: Number(e.target.value) }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
+            {/* Results crossfade — Rive fade-out duration */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Results crossfade — Rive fade-out</FieldLabel>
+                <p className="text-xs text-gray-400">How long the Rive canvas takes to fade out as the results screen appears.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={50}
+                  value={settings.resultsCrossfade.riveFadeDuration}
+                  onChange={e => setSettings(s => ({ ...s, resultsCrossfade: { ...s.resultsCrossfade, riveFadeDuration: Number(e.target.value) } }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
+            {/* Results crossfade — UI fade-in duration */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Results crossfade — UI fade-in</FieldLabel>
+                <p className="text-xs text-gray-400">How long the score and buttons take to fade in once revealed.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" min={0} step={50}
+                  value={settings.resultsCrossfade.uiFadeDuration}
+                  onChange={e => setSettings(s => ({ ...s, resultsCrossfade: { ...s.resultsCrossfade, uiFadeDuration: Number(e.target.value) } }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
+            {/* Results crossfade — offset */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <FieldLabel>Results crossfade — offset</FieldLabel>
+                <p className="text-xs text-gray-400">Shifts when the Rive fade-out starts, relative to the reveal delay above. Negative starts it earlier, positive later.</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-6">
+                <input
+                  type="number" step={50}
+                  value={settings.resultsCrossfade.offset}
+                  onChange={e => setSettings(s => ({ ...s, resultsCrossfade: { ...s.resultsCrossfade, offset: Number(e.target.value) } }))}
+                  className="w-24 rounded border border-gray-200 px-2 py-1.5 text-right font-mono text-sm text-gray-700 focus:border-gray-400 focus:outline-none"
+                />
+                <span className="text-xs text-gray-400">ms</span>
+              </div>
+            </div>
+
             {/* UI fade duration */}
             <div className="flex items-center justify-between px-5 py-4">
               <div>
@@ -1702,7 +1770,10 @@ function GameTimeline({
         <TLEvent label="Reaction ends · next encounter or final" sub="pauseBeforeResults applies only after the last encounter" />
         <TLPause label="pauseBeforeResults — before results screen" value={settings.pauseBeforeResults} maxMs={maxMs} input={num('pauseBeforeResults')} />
 
-        <TLEvent label="Results screen" />
+        <TLEvent label="Results screen state entered" />
+        <TLPause label="pauseResultsReveal — score and buttons fade in" value={settings.pauseResultsReveal} maxMs={maxMs} input={num('pauseResultsReveal')} />
+
+        <TLEvent label="Results UI visible" />
       </div>
     </div>
   );
