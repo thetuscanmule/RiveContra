@@ -663,7 +663,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-5 py-4">
               <div>
                 <FieldLabel>Option button hover volume multiplier</FieldLabel>
-                <p className="text-xs text-gray-400">Multiplies the hover sound's volume for just the dice roll option buttons. 1 = no change.</p>
+                <p className="text-xs text-gray-400">Multiplies the hover sound&apos;s volume for just the dice roll option buttons. 1 = no change.</p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0 ml-6">
                 <input

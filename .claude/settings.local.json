@@ -23,7 +23,8 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/admin)",
       "Bash(xargs cat)",
-      "Bash(git status *)"
+      "Bash(git status *)",
+      "Bash(npx next *)"
     ],
     "additionalDirectories": [
       "/private/tmp"
