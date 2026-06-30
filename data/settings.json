@@ -17,17 +17,17 @@
     "themes": {
       "default": {
         "inner": "#292929",
-        "outer": "#0a0a0a",
+        "outer": "#121212",
         "falloff": 75
       },
       "win": {
-        "inner": "#8fa03b",
-        "outer": "#080808",
+        "inner": "#97aa3c",
+        "outer": "#394229",
         "falloff": 70
       },
       "lose": {
         "inner": "#783f44",
-        "outer": "#080808",
+        "outer": "#422424",
         "falloff": 70
       }
     }
