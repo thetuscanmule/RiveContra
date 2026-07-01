@@ -27,6 +27,27 @@ export function BackgroundGradient({ theme }: Props) {
           />
         );
       })}
+
+      {/* Procedural grain via SVG feTurbulence */}
+      {SETTINGS.grain > 0 && (
+        <>
+          <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+            <defs>
+              <filter id="bg-grain" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
+                <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+                <feColorMatrix type="saturate" values="0" />
+              </filter>
+            </defs>
+          </svg>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            opacity: SETTINGS.grain,
+            filter: 'url(#bg-grain)',
+            mixBlendMode: 'overlay',
+          }} />
+        </>
+      )}
     </div>
   );
 }

@@ -166,6 +166,7 @@ export default function Home() {
   const hoverJawRef    = useRef(0);
   const enterHoverRafRef = useRef<number>(0);
   const enterHoverRef    = useRef(0);
+  const jawIdleRafRef    = useRef<number>(0);
   const voiceCache     = useRef(new Map<string, string>());
   // Mirror rollResult in a ref so reacting-phase callbacks always read fresh value
   const rollResultRef   = useRef<RollResult | null>(null);
@@ -234,6 +235,32 @@ export default function Home() {
     enterHoverRafRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(enterHoverRafRef.current);
   }, [enterHoverTarget]);
+
+  // Idle jaw oscillation — starts after jaw has returned to default, cancelled while speaking
+  useEffect(() => {
+    if (isSpeaking) {
+      cancelAnimationFrame(jawIdleRafRef.current);
+      return;
+    }
+    const delay = setTimeout(() => {
+      const startTime = performance.now();
+      const idle = (now: number) => {
+        const elapsed = now - startTime;
+        const lo  = SETTINGS.jawDefault;
+        const hi  = SETTINGS.jawDefaultExtended;
+        const val = lo + (hi - lo) * (0.5 - 0.5 * Math.cos(2 * Math.PI * elapsed / SETTINGS.jawIdleSpeed));
+        smoothedRef.current = val;
+        setJawOpen(val);
+        jawIdleRafRef.current = requestAnimationFrame(idle);
+      };
+      jawIdleRafRef.current = requestAnimationFrame(idle);
+    }, SETTINGS.jawReturnDuration);
+    return () => {
+      clearTimeout(delay);
+      cancelAnimationFrame(jawIdleRafRef.current);
+    };
+  }, [isSpeaking]);
+
   useEffect(() => { usedIdsRef.current = usedIds; },      [usedIds]);
 
   // Reset optionsReady whenever a new encounter begins

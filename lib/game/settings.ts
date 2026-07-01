@@ -33,6 +33,8 @@ export const SETTINGS = data as {
   faviconSrc:           string;
   smoothing:            number;
   jawDefault:           number;
+  jawDefaultExtended:   number;
+  jawIdleSpeed:         number;
   jawReturnDuration:    number;
   debugOverlay:         boolean;
   hoverJaw:             { button0: number; button1: number; button2: number; speed: number };
@@ -64,6 +66,7 @@ export const SETTINGS = data as {
   riveScale:            { scale: number; scaleMobile: number };
   riveDiceOffset:       number;
   riveDiceScale:        number;
+  grain:                number;
   diceDim:              { opacity: number; duration: number };
   texture:              TextureConfig;
   audio:                { phases: Record<string, AudioClip>; ui: { click: AudioClip; hover: AudioClip } };

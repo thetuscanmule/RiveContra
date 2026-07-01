@@ -16,19 +16,19 @@
   "background": {
     "themes": {
       "default": {
-        "inner": "#292929",
+        "inner": "#212121",
         "outer": "#0d0d0d",
-        "falloff": 75
+        "falloff": 110
       },
       "win": {
         "inner": "#3f4739",
         "outer": "#0d0d0d",
-        "falloff": 80
+        "falloff": 60
       },
       "lose": {
         "inner": "#372f2f",
         "outer": "#0d0d0d",
-        "falloff": 80
+        "falloff": 60
       }
     }
   },
@@ -64,6 +64,8 @@
   "faviconSrc": "/favicon.svg",
   "smoothing": 0.95,
   "jawDefault": 0.15,
+  "jawDefaultExtended": 0.25,
+  "jawIdleSpeed": 2000,
   "jawReturnDuration": 2000,
   "debugOverlay": false,
   "hoverJaw": {
@@ -137,6 +139,7 @@
   },
   "riveDiceOffset": 12,
   "riveDiceScale": 1.5,
+  "grain": 0.1,
   "diceDim": {
     "opacity": 0.03,
     "duration": 1500

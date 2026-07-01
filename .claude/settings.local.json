@@ -28,10 +28,12 @@
       "Bash(lsof -ti:3000)",
       "Bash(xargs -r kill -9)",
       "Bash(break)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/favicon.ico)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/favicon.ico)",
+      "Bash(pkill -f \"next dev\" 2>/dev/null; rm -rf .next && npm run dev)"
     ],
     "additionalDirectories": [
-      "/private/tmp"
+      "/private/tmp",
+      "/Users/matthewbuchanan/Dropbox/RiveXContra_Caves/.next"
     ]
   }
 }
