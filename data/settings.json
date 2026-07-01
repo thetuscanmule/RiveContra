@@ -136,7 +136,7 @@
     "scaleMobile": 0.65
   },
   "riveDiceOffset": 12,
-  "riveDiceScale": 1.4,
+  "riveDiceScale": 1.5,
   "diceDim": {
     "opacity": 0.03,
     "duration": 1500
