@@ -63,6 +63,7 @@ export const SETTINGS = data as {
   dialogue:             DialogueConfig;
   riveScale:            { scale: number; scaleMobile: number };
   riveDiceOffset:       number;
+  diceDim:              { opacity: number; duration: number };
   texture:              TextureConfig;
   audio:                { phases: Record<string, AudioClip>; ui: { click: AudioClip; hover: AudioClip } };
 };

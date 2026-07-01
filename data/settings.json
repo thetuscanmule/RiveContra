@@ -136,6 +136,10 @@
     "scaleMobile": 0.65
   },
   "riveDiceOffset": 12,
+  "diceDim": {
+    "opacity": 0.03,
+    "duration": 500
+  },
   "texture": {
     "src": "/bg-texture.svg",
     "size": 300,

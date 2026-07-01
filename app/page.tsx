@@ -616,8 +616,8 @@ export default function Home() {
     <>
     <CustomCursor />
     <BackgroundGradient theme={gradientTheme} />
-    <BackgroundTexture />
-    <BackgroundRings />
+    <BackgroundTexture diceActive={riveScene === 2} />
+    <BackgroundRings diceActive={riveScene === 2} />
 
     {/* RiveXContra logo — bottom-center, fixed */}
     <img

@@ -2,7 +2,7 @@
 
 import { SETTINGS } from '@/lib/game/settings';
 
-export function BackgroundRings() {
+export function BackgroundRings({ diceActive = false }: { diceActive?: boolean }) {
   return (
     <>
       {SETTINGS.rings.map((ring, i) =>
@@ -12,7 +12,8 @@ export function BackgroundRings() {
             style={{
               position: 'fixed',
               inset: 0,
-              opacity: ring.opacity,
+              opacity: diceActive ? SETTINGS.diceDim.opacity : ring.opacity,
+              transition: `opacity ${SETTINGS.diceDim.duration}ms ease`,
               pointerEvents: 'none',
               zIndex: 1,
             }}
