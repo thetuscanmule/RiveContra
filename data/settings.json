@@ -77,9 +77,9 @@
   "pauseBeforeGreeting": 1000,
   "pauseBeforePreRoll": 500,
   "pauseDiceReveal": 250,
-  "pauseGradientShift": 3000,
+  "pauseGradientShift": 5000,
   "pauseDiceRoll": 8000,
-  "pauseBeforeResults": 2000,
+  "pauseBeforeResults": 1000,
   "pauseResultsReveal": 3000,
   "resultsCrossfade": {
     "riveFadeDuration": 500,
@@ -111,8 +111,8 @@
     "logoGap": -18
   },
   "enterHover": {
-    "fadeInDuration": 150,
-    "fadeOutDuration": 100
+    "fadeInDuration": 250,
+    "fadeOutDuration": 50
   },
   "dialogue": {
     "name": {

@@ -732,10 +732,14 @@ export default function Home() {
               <p className="font-body text-sm text-red-400/80 tracking-wide -mt-4">{nameError}</p>
             )}
 
-            {/* Save button */}
-            <HexButton onClick={handleSaveName} disabled={!nameInput.trim()}>
-              Save
-            </HexButton>
+            {/* Save button — fades in once the field has content */}
+            <div style={{
+              opacity:       nameInput.trim() ? 1 : 0,
+              pointerEvents: nameInput.trim() ? 'auto' : 'none',
+              transition:    'opacity 150ms ease',
+            }}>
+              <HexButton onClick={handleSaveName}>Save</HexButton>
+            </div>
           </div>
         </div>
       )}
@@ -792,11 +796,11 @@ export default function Home() {
           {/* Row 2 — Dialogue + option buttons */}
           <div className="relative w-full max-w-lg h-44">
 
-        {/* Dialogue — shown whenever currentDialogue is set, fades out for options */}
+        {/* Dialogue — shown whenever currentDialogue is set, fades out for options and during dice roll */}
         <div
           className="absolute inset-0 flex items-center justify-center px-2"
           style={{
-            opacity:    (phase === 'presenting' && optionsReady) ? 0 : 1,
+            opacity:    (riveScene === 2 || (phase === 'presenting' && optionsReady)) ? 0 : 1,
             transition: `opacity ${SETTINGS.dialogueFade}ms ease`,
             pointerEvents: 'none',
           }}

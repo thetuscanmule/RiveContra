@@ -1,9 +1,9 @@
 {
   "greeting": [
     "Welcome, [player]. You dare enter my domain? Hm. Let us see how long that nerve holds.",
-    "Ah. [player]. They always look so confident at the door.",
+    "They always look so confident at the door, [player].",
     "[player]. You step in as though you belong here. Interesting. Let us test that theory.",
-    "The dungeon has been waiting, [player]. It is patient. Are you?"
+    "The dungeon has been waiting. It is patient [player]. Are you?"
   ],
   "preRoll": [
     "The bones decide...",
@@ -31,9 +31,9 @@
     ]
   },
   "negative": [
-    "Haaa haaa [player].. Ah. There it is. Every run ends eventually — yours just ended here.",
-    "Haaa haaa [player].. The dice remember what you forget: nothing lasts.",
-    "Haaa haaa [player].. A valiant effort. Truly. But the dungeon takes all, in the end.",
-    "Haaa haaa [player]... And so the bones fall silent. As they always do."
+    "Ah. There it is [player]. Every run ends eventually — yours just ended here.",
+    "[player] The dice remember what you forget: nothing lasts.",
+    "A valiant effort [player]. Truly. But the dungeon takes all, in the end.",
+    "And so the bones fall silent, [player].. As they always do."
   ]
 }
