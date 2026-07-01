@@ -782,7 +782,7 @@ export default function Home() {
             style={{
               opacity:    phase === 'results' && !resultsRiveVisible ? 0 : 1,
               transition: `opacity ${SETTINGS.resultsCrossfade.riveFadeDuration}ms ease-out`,
-              transform:  riveScene === 2 ? `translateY(${SETTINGS.riveDiceOffset}vh)` : undefined,
+              transform:  riveScene === 2 ? `translateY(${SETTINGS.riveDiceOffset}vh) scale(${SETTINGS.riveDiceScale})` : undefined,
             }}
           >
             <GameRive scene={riveScene} jawOpen={Math.max(jawOpen, hoverJaw)} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} flameLevel={riveFlameLevel} enterHover={enterHoverValue}
