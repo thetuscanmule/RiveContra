@@ -35,7 +35,7 @@
   "rings": [
     {
       "src": "/ring1.svg",
-      "opacity": 0.24,
+      "opacity": 0.2,
       "scale": 1.15,
       "speed": 120,
       "direction": "cw"
@@ -138,7 +138,7 @@
   "riveDiceOffset": 12,
   "diceDim": {
     "opacity": 0.03,
-    "duration": 500
+    "duration": 1500
   },
   "texture": {
     "src": "/bg-texture.svg",
