@@ -9,7 +9,7 @@ import { HexButton } from '@/components/HexButton';
 import type { ThemeKey } from '@/lib/game/settings';
 import { ENCOUNTERS } from '@/lib/game/encounters';
 import { GREETING_LINES, PRE_ROLL_LINES, REACTION_LINES } from '@/lib/game/reactionLines';
-import { pickEncounter, resolveRoll, pickReaction, pickLine, stepRange, luckBonusForTurn } from '@/lib/game/engine';
+import { pickEncounter, resolveRoll, pickReaction, pickLine, luckBonusForTurn } from '@/lib/game/engine';
 import { SETTINGS } from '@/lib/game/settings';
 import { playClickSound } from '@/lib/game/playClickSound';
 import { replaceShortcodes } from '@/lib/game/replaceShortcodes';
@@ -782,6 +782,7 @@ export default function Home() {
             style={{
               opacity:    phase === 'results' && !resultsRiveVisible ? 0 : 1,
               transition: `opacity ${SETTINGS.resultsCrossfade.riveFadeDuration}ms ease-out`,
+              transform:  riveScene === 2 ? `translateY(${SETTINGS.riveDiceOffset}vh)` : undefined,
             }}
           >
             <GameRive scene={riveScene} jawOpen={Math.max(jawOpen, hoverJaw)} roll={riveRoll} emotion={riveEmotion} diceOutcome={riveDiceOutcome} flameLevel={riveFlameLevel} enterHover={enterHoverValue}
@@ -844,12 +845,7 @@ export default function Home() {
               style={{ minWidth: SETTINGS.optionButtonMinWidth }}
               hoverVolumeMultiplier={SETTINGS.optionButtonHoverVolumeMultiplier}
             >
-              <span className="flex items-center justify-between gap-4 w-full">
-                <span>{opt.label}</span>
-                <span className="shrink-0 text-xs font-mono opacity-50 group-hover:opacity-70">
-                  {stepRange(opt.threshold)}
-                </span>
-              </span>
+              {opt.label}
             </HexButton>
           ))}
         </div>

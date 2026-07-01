@@ -103,7 +103,7 @@
   "buttonPaddingX": 32,
   "buttonPaddingY": 12,
   "resultsButtonMinWidth": 260,
-  "optionButtonMinWidth": 420,
+  "optionButtonMinWidth": 340,
   "optionButtonGap": 1.5,
   "startScreen": {
     "scale": 1.1,
@@ -135,6 +135,7 @@
     "scale": 0.85,
     "scaleMobile": 0.65
   },
+  "riveDiceOffset": 12,
   "texture": {
     "src": "/bg-texture.svg",
     "size": 300,

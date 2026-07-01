@@ -62,6 +62,7 @@ export const SETTINGS = data as {
   enterHover:           { fadeInDuration: number; fadeOutDuration: number };
   dialogue:             DialogueConfig;
   riveScale:            { scale: number; scaleMobile: number };
+  riveDiceOffset:       number;
   texture:              TextureConfig;
   audio:                { phases: Record<string, AudioClip>; ui: { click: AudioClip; hover: AudioClip } };
 };
