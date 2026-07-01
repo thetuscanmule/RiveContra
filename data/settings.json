@@ -21,14 +21,14 @@
         "falloff": 75
       },
       "win": {
-        "inner": "#303030",
+        "inner": "#3f4739",
         "outer": "#0d0d0d",
-        "falloff": 100
+        "falloff": 80
       },
       "lose": {
-        "inner": "#212121",
+        "inner": "#372f2f",
         "outer": "#0d0d0d",
-        "falloff": 100
+        "falloff": 80
       }
     }
   },
@@ -69,7 +69,7 @@
   "hoverJaw": {
     "button0": 0.3,
     "button1": 0.6,
-    "button2": 0.75,
+    "button2": 0.73,
     "speed": 0.12
   },
   "speechSpeed": 0.7,
@@ -77,8 +77,8 @@
   "pauseBeforeGreeting": 1000,
   "pauseBeforePreRoll": 500,
   "pauseDiceReveal": 250,
-  "pauseGradientShift": 5000,
-  "pauseDiceRoll": 8000,
+  "pauseGradientShift": 1500,
+  "pauseDiceRoll": 7000,
   "pauseBeforeResults": 1000,
   "pauseResultsReveal": 3000,
   "resultsCrossfade": {
