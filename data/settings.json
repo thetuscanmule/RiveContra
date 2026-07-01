@@ -62,9 +62,9 @@
   },
   "pageTitle": "SkullGuy",
   "faviconSrc": "/favicon.svg",
-  "smoothing": 0.96,
+  "smoothing": 0.95,
   "jawDefault": 0.15,
-  "jawReturnDuration": 1000,
+  "jawReturnDuration": 2000,
   "debugOverlay": false,
   "hoverJaw": {
     "button0": 0.3,
