@@ -49,7 +49,7 @@ export const SETTINGS = data as {
   pauseUiFade:          number;
   dialogueFade:         number;
   luck:                 number;
-  layout:               { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number };
+  layout:               { blockOffset: number; blockOffsetMobile: number; rowGap: number; rowGapMobile: number; optionBlockOffset: number; optionBlockOffsetMobile: number };
   buttonMinWidth:        number;
   buttonHoverScale:      number;
   optionButtonHoverVolumeMultiplier: number;

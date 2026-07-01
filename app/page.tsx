@@ -827,6 +827,7 @@ export default function Home() {
         <div
           className="absolute inset-0 flex flex-col items-center justify-center"
           style={{
+            transform:     `translateY(${isMobile ? SETTINGS.layout.optionBlockOffsetMobile : SETTINGS.layout.optionBlockOffset}vh)`,
             gap:           `${SETTINGS.optionButtonGap}vh`,
             opacity:       (phase === 'presenting' && optionsReady) ? 1 : 0,
             transition:    `opacity ${SETTINGS.dialogueFade}ms ease`,

@@ -93,7 +93,9 @@
     "blockOffset": -8,
     "blockOffsetMobile": -10,
     "rowGap": 0,
-    "rowGapMobile": 1.5
+    "rowGapMobile": 1.5,
+    "optionBlockOffset": 1,
+    "optionBlockOffsetMobile": 0
   },
   "buttonMinWidth": 220,
   "buttonHoverScale": 1.1,
